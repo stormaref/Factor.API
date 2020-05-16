@@ -16,7 +16,7 @@ namespace Factor.Controllers
             _service = service;
         }
 
-        [HttpPost]
+        [HttpPost("[action]")]
         public async Task<IActionResult> SendSMS(string phone)
         {
             try

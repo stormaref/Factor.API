@@ -15,7 +15,7 @@ namespace Factor.Controllers
             _logger = logger;
         }
 
-        [HttpPost]
+        [HttpPost("[action]")]
         public IActionResult UploadFile([FromForm]ImageFile file)
         {
             if (file != null && file.File.ContentType == "image/jpeg")
