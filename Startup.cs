@@ -2,6 +2,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Factor.IServices;
+using Factor.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.HttpsPolicy;
@@ -31,6 +33,7 @@ namespace Factor
             {
                 c.SwaggerDoc("v1", new OpenApiInfo { Title = "Factor API", Version = "v1" });
             });
+            services.AddSingleton<IMessageService, MessageService>();         
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

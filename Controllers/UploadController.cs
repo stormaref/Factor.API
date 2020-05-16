@@ -16,18 +16,23 @@ namespace Factor.Controllers
         }
 
         [HttpPost]
-        public IActionResult UploadFile([FromForm(Name = "file")]IFormFile file)
+        public IActionResult UploadFile([FromForm]ImageFile file)
         {
-            if (file != null && file.ContentType == "image/jpeg")
+            if (file != null && file.File.ContentType == "image/jpeg")
             {
-                var bytes = new byte[file.Length];
-                file.OpenReadStream().Read(bytes, 0, bytes.Length);
+                var bytes = new byte[file.File.Length];
+                file.File.OpenReadStream().Read(bytes, 0, bytes.Length);
                 return Ok();
             }
             else
             {
-                return BadRequest();
+                return BadRequest("File must be a jpeg imgae");
             }
         }
+    }
+
+    public class ImageFile
+    {
+        public IFormFile File { get; set; }
     }
 }
