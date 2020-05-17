@@ -19,7 +19,7 @@ namespace Factor.Controllers
         {
             if (Username == "admin" && Password == _configuration.GetValue<string>("AP"))
             {
-                return Accepted();
+                return Accepted("Login granted");
             }
             else
             {
@@ -28,7 +28,7 @@ namespace Factor.Controllers
         }
 
         [HttpGet("[action]")]
-        public async void GetAllFactors()
+        public void GetAllFactors()
         {
 
         }
