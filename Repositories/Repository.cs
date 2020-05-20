@@ -49,5 +49,9 @@ namespace Factor.Repositories
             if (entity == null) throw new ArgumentNullException("entity");
             _context.SaveChanges();
         }
+        public DbSet<T> GetDbSet()
+        {
+            return _entities;
+        }
     }
 }

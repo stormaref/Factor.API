@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Factor.IServices
 {
-    interface IAuthService
+    public interface IAuthService
     {
         string CreateToken(User user);
     }

@@ -37,9 +37,11 @@ namespace Factor
             services.AddDbContext<DatabaseContext>(opts => opts.UseInMemoryDatabase("database"));
             services.AddScoped<DatabaseContext>();
             services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
+            services.AddScoped<IUnitOfWork, UnitOfWork>();
 
             services.AddSingleton<IMessageService, MessageService>();
             services.AddSingleton<IAuthService, AuthService>();
+
 
             services.AddAuthentication(x =>
             {

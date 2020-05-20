@@ -1,4 +1,5 @@
 ﻿using Factor.Models;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 
@@ -11,5 +12,6 @@ namespace Factor.IRepositories
         void Insert(T entity);
         void Update(T entity);
         void Delete(Guid id);
+        DbSet<T> GetDbSet();
     }
 }

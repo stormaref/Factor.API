@@ -1,6 +1,12 @@
 ﻿using Factor.IServices;
+using Factor.Models;
+using Factor.Tools;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using System;
+using System.Linq;
+using System.Security.Claims;
 using System.Threading.Tasks;
 
 namespace Factor.Controllers
@@ -9,20 +15,57 @@ namespace Factor.Controllers
     [ApiController]
     public class LoginController : ControllerBase
     {
-        private readonly IMessageService _service;
+        private readonly IMessageService _messageService;
+        private readonly IAuthService _authService;
+        private IUnitOfWork _unitOfWork;
 
-        public LoginController(IMessageService service)
+        public LoginController(IMessageService service, IUnitOfWork unitOfWork, IAuthService authService)
         {
-            _service = service;
+            _messageService = service;
+            _unitOfWork = unitOfWork;
+            _authService = authService;
         }
 
         [HttpPost("[action]")]
-        public async Task<IActionResult> SendSMS(string phone)
+        public async Task<IActionResult> Login([FromQuery]string phone)
         {
+            User user = await _unitOfWork.UserRepository.GetDbSet().SingleOrDefaultAsync(u => u.Phone == phone);
             try
             {
-                var response = await _service.SendSMS(phone, GenerateCode());
-                return Ok(response);
+                var code = StaticTools.GenerateCode();
+                var response = await _messageService.SendSMS(phone, code);
+                if (user == null)
+                {
+                    SMSVerification verification = new SMSVerification(code, phone);
+                    User newUser = new User(phone);
+                    try
+                    {
+                        _unitOfWork.UserRepository.Insert(newUser);
+                        verification.User = newUser;
+                        _unitOfWork.VerificationRepository.Insert(verification);
+                        _unitOfWork.Commit();
+                    }
+                    catch (Exception)
+                    {
+                        _unitOfWork.Rollback();
+                        return Problem("Database error");
+                    }
+                }
+                else
+                {
+                    var verification = await _unitOfWork.VerificationRepository.GetDbSet().SingleOrDefaultAsync(v => v.User.Phone == phone);
+                    try
+                    {
+                        _unitOfWork.VerificationRepository.Update(verification);
+                        _unitOfWork.Commit();
+                    }
+                    catch (Exception)
+                    {
+                        _unitOfWork.Rollback();
+                        return Problem("Database error");
+                    }
+                }
+                return Ok("Code sent");
             }
             catch (Exception e)
             {
@@ -30,10 +73,64 @@ namespace Factor.Controllers
             }
         }
 
-        private long GenerateCode()
+        [HttpGet("[action]")]
+        [Authorize]
+        public string TokenCheck()
         {
-            Random random = new Random();
-            return random.Next(1111, 9999);
+            var identity = HttpContext.User.Identity as ClaimsIdentity;
+            return identity.Claims.ElementAt(1).Value.Split(' ').Last();
+        }
+
+        [HttpPost("[action]")]
+        public async Task<IActionResult> ResendCode([FromQuery]string phone)
+        {
+            var model = await _unitOfWork.VerificationRepository.GetDbSet().SingleOrDefaultAsync(v => v.Phone == phone);
+            if (model == null)
+            {
+                return BadRequest("Phone is not regestred yet");
+            }
+            else
+            {
+                var code = StaticTools.GenerateCode();
+                try
+                {
+                    var response = await _messageService.SendSMS(phone, code);
+                    model.Code = code;
+                    _unitOfWork.VerificationRepository.Update(model);
+                    _unitOfWork.Commit();
+                    return Ok("Code sent");
+                }
+                catch (Exception ex)
+                {
+                    return BadRequest(ex.Message);
+                }
+            }
+        }
+
+        [HttpPost("[action]")]
+        public async Task<IActionResult> VerifyCode([FromQuery]string phone, [FromQuery]long code)
+        {
+            var model = await _unitOfWork.VerificationRepository.GetDbSet().SingleOrDefaultAsync(v => v.Phone == phone);
+            if (model == null)
+            {
+                return BadRequest("Phone number is incorrect");
+            }
+            else
+            {
+                if (model.Code == code)
+                {
+                    var user = await _unitOfWork.UserRepository.GetDbSet().SingleOrDefaultAsync(u=>u.Phone == model.Phone);
+                    if (user ==null)
+                    {
+                        return Problem("Database error");
+                    }
+                    return Ok(new TokenResponseModel(phone, _authService.CreateToken(user)));
+                }
+                else
+                {
+                    return BadRequest("Code is incorrect");
+                }
+            }
         }
     }
 }
