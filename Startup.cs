@@ -34,6 +34,8 @@ namespace Factor
                 c.SwaggerDoc("v1", new OpenApiInfo { Title = "Factor API", Version = "v1" });
             });
 
+            services.AddCors();
+
             services.AddDbContext<DatabaseContext>(opts => opts.UseInMemoryDatabase("database"));
             services.AddScoped<DatabaseContext>();
             services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
@@ -99,6 +101,8 @@ namespace Factor
             {
                 c.SwaggerEndpoint("/swagger/v1/swagger.json", "Factor API v1");
             });
+
+            app.UseCors(option => option.AllowAnyOrigin());
         }
     }
 }
