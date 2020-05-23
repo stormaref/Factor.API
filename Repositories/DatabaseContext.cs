@@ -16,5 +16,6 @@ namespace Factor.Repositories
 
         public DbSet<User> Users { get; set; }
         public DbSet<SMSVerification> Verifications { get; set; }
+        public DbSet<Models.Factor> Factors { get; set; }
     }
 }

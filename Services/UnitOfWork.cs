@@ -21,6 +21,12 @@ namespace Factor.Services
             get { return _verificationRepository ??= new Repository<SMSVerification>(_databasecontext); }
         }
 
+        private IRepository<Models.Factor> _factorRepository;
+        public IRepository<Models.Factor> FactorRepository
+        {
+            get { return _factorRepository ??= new Repository<Models.Factor>(_databasecontext); }
+        }
+
         public UnitOfWork(DatabaseContext databasecontext)
         {
             _databasecontext = databasecontext;

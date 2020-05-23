@@ -4,6 +4,7 @@ using Factor.Tools;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Linq;
 using System.Security.Claims;
@@ -17,13 +18,15 @@ namespace Factor.Controllers
     {
         private readonly IMessageService _messageService;
         private readonly IAuthService _authService;
+        private readonly ILogger<LoginController> _logger;
         private IUnitOfWork _unitOfWork;
 
-        public LoginController(IMessageService service, IUnitOfWork unitOfWork, IAuthService authService)
+        public LoginController(IMessageService messageService, IAuthService authService, ILogger<LoginController> logger, IUnitOfWork unitOfWork)
         {
-            _messageService = service;
-            _unitOfWork = unitOfWork;
+            _messageService = messageService;
             _authService = authService;
+            _logger = logger;
+            _unitOfWork = unitOfWork;
         }
 
         [HttpPost("[action]")]
@@ -119,9 +122,10 @@ namespace Factor.Controllers
             {
                 if (model.Code == code)
                 {
-                    var user = await _unitOfWork.UserRepository.GetDbSet().SingleOrDefaultAsync(u=>u.Phone == model.Phone);
-                    if (user ==null)
+                    var user = await _unitOfWork.UserRepository.GetDbSet().SingleOrDefaultAsync(u => u.Phone == model.Phone);
+                    if (user == null)
                     {
+                        _logger.Log(LogLevel.Error, new Exception("database error"), "cannot get user by phone", model);
                         return Problem("Database error");
                     }
                     return Ok(new TokenResponseModel(phone, _authService.CreateToken(user)));

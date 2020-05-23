@@ -1,22 +1,27 @@
 ﻿using Factor.IServices;
 using Factor.Models;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 using System;
 using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
+using System.Linq;
 using System.Security.Claims;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace Factor.Services
 {
     public class AuthService : IAuthService
     {
         private readonly IConfiguration _configuration;
+        private readonly IUnitOfWork _unitOfWork;
 
-        public AuthService(IConfiguration configuration)
+        public AuthService(IConfiguration configuration, IUnitOfWork unitOfWork)
         {
             _configuration = configuration;
+            _unitOfWork = unitOfWork;
         }
 
         public string CreateToken(User user)
@@ -37,6 +42,11 @@ namespace Factor.Services
             JwtSecurityTokenHandler tokenHandler = new JwtSecurityTokenHandler();
             SecurityToken token = tokenHandler.CreateToken(tokenDescriptor);
             return tokenHandler.WriteToken(token);
+        }
+
+        public async Task<User> GetUser(string id)
+        {
+            return await _unitOfWork.UserRepository.GetDbSet().SingleOrDefaultAsync(u => u.Id.ToString() == id);
         }
     }
 }
