@@ -3,11 +3,13 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using System;
 using Microsoft.Extensions.Logging;
+using Microsoft.AspNetCore.Cors;
 
 namespace Factor.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [EnableCors("MyPolicy")]
     public class AdministratorController : ControllerBase
     {
         private readonly IConfiguration _configuration;
@@ -30,7 +32,7 @@ namespace Factor.Controllers
             }
             else
             {
-                return BadRequest("Username or password is incorrect");
+                return Unauthorized("Username or password is incorrect");
             }
         }
 

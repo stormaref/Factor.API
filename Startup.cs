@@ -34,7 +34,12 @@ namespace Factor
                 c.SwaggerDoc("v1", new OpenApiInfo { Title = "Factor API", Version = "v1" });
             });
 
-            services.AddCors();
+            services.AddCors(o => o.AddPolicy("MyPolicy", builder =>
+            {
+                builder.AllowAnyOrigin()
+                       .AllowAnyMethod()
+                       .AllowAnyHeader();
+            }));
 
             services.AddDbContext<DatabaseContext>(opts => opts.UseInMemoryDatabase("database"));
             services.AddScoped<DatabaseContext>();
@@ -102,7 +107,7 @@ namespace Factor
                 c.SwaggerEndpoint("/swagger/v1/swagger.json", "Factor API v1");
             });
 
-            app.UseCors(option => option.AllowAnyOrigin());
+            app.UseCors("MyPolicy");
         }
     }
 }
