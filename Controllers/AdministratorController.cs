@@ -4,6 +4,7 @@ using Microsoft.Extensions.Configuration;
 using System;
 using Microsoft.Extensions.Logging;
 using Microsoft.AspNetCore.Cors;
+using Factor.Models;
 
 namespace Factor.Controllers
 {
@@ -24,9 +25,9 @@ namespace Factor.Controllers
         }
 
         [HttpPost("[action]")]
-        public IActionResult Login([FromQuery] string Username, [FromQuery] string Password)
+        public IActionResult Login([FromBody] AdminLoginRequestModel model)
         {
-            if (Username == "admin" && Password == _configuration.GetValue<string>("AP"))
+            if (model.Username == "admin" && model.Password == _configuration.GetValue<string>("AP"))
             {
                 return Accepted("Login granted");
             }

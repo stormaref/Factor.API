@@ -46,8 +46,8 @@ namespace Factor
             services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
             services.AddScoped<IUnitOfWork, UnitOfWork>();
 
-            services.AddSingleton<IMessageService, MessageService>();
-            services.AddSingleton<IAuthService, AuthService>();
+            services.AddScoped<IMessageService, MessageService>();
+            services.AddScoped<IAuthService, AuthService>();
 
 
             services.AddAuthentication(x =>
@@ -84,6 +84,8 @@ namespace Factor
 
             app.UseAuthorization();
 
+            app.UseCors("MyPolicy");
+
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapControllers();
@@ -105,9 +107,7 @@ namespace Factor
             app.UseSwaggerUI(c =>
             {
                 c.SwaggerEndpoint("/swagger/v1/swagger.json", "Factor API v1");
-            });
-
-            app.UseCors("MyPolicy");
+            });            
         }
     }
 }

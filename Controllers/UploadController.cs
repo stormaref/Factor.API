@@ -35,7 +35,8 @@ namespace Factor.Controllers
                 file.File.OpenReadStream().Read(bytes, 0, bytes.Length);
                 var identity = HttpContext.User.Identity as ClaimsIdentity;
                 var id = identity.Claims.ElementAt(0).Value.Split(' ').Last();
-                var factor = new Models.Factor(bytes,await _authService.GetUser(id), DateTime.Now);
+                var factor = new Models.Factor(bytes, id,DateTime.Now);
+                factor.User = await _authService.GetUser(id);
                 try
                 {
                     _unitOfWork.FactorRepository.Insert(factor);
