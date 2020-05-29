@@ -1,7 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace Factor.Models
 {
@@ -9,14 +6,12 @@ namespace Factor.Models
     {
         public byte[] Image { get; set; }
         public virtual User User { get; set; }
-        public string UserId { get; set; }
         public DateTime UploadTime { get; set; }
         public bool IsDone { get; set; }
 
-        public Factor(byte[] image, string userId, DateTime uploadTime)
+        public Factor(byte[] image, DateTime uploadTime)
         {
             Image = image;
-            UserId = userId;
             UploadTime = uploadTime;
         }
     }

@@ -1,7 +1,7 @@
-﻿using Factor.IServices;
-using Factor.Repositories;
-using Factor.IRepositories;
+﻿using Factor.IRepositories;
+using Factor.IServices;
 using Factor.Models;
+using Factor.Repositories;
 
 namespace Factor.Services
 {

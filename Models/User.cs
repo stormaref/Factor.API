@@ -1,10 +1,4 @@
-﻿using Microsoft.CodeAnalysis.CSharp.Syntax;
-using System;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
-using System.Linq;
-using System.Security.Claims;
-using System.Threading.Tasks;
+﻿using System.Collections.Generic;
 
 namespace Factor.Models
 {
@@ -13,6 +7,8 @@ namespace Factor.Models
         public string Phone { get; set; }
         public string FirstName { get; set; }
         public string LastName { get; set; }
+        public ICollection<Factor> Factors { get; set; }
+        public SMSVerification Verification { get; set; }
         public User(string phone)
         {
             Phone = phone;

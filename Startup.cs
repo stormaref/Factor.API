@@ -1,4 +1,3 @@
-using System.Text;
 using Factor.IRepositories;
 using Factor.IServices;
 using Factor.Repositories;
@@ -12,6 +11,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+using System.Text;
 
 namespace Factor
 {
@@ -36,12 +36,16 @@ namespace Factor
 
             services.AddCors(o => o.AddPolicy("MyPolicy", builder =>
             {
-                builder.AllowAnyOrigin()
+                builder.WithOrigins(Configuration.GetValue<string>("Origin"))
                        .AllowAnyMethod()
-                       .AllowAnyHeader();
+                       .AllowAnyHeader()
+                       .AllowCredentials()
+                       .SetIsOriginAllowedToAllowWildcardSubdomains()
+                       .WithExposedHeaders("Access-Control-Allow-Origin");
             }));
 
-            services.AddDbContext<DatabaseContext>(opts => opts.UseInMemoryDatabase("database"));
+            //services.AddDbContext<DatabaseContext>(opts => opts.UseInMemoryDatabase("database"));
+            services.AddDbContext<DatabaseContext>(opts => opts.UseSqlServer(Configuration.GetValue<string>("ConnectionString")));
             services.AddScoped<DatabaseContext>();
             services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
             services.AddScoped<IUnitOfWork, UnitOfWork>();
@@ -80,11 +84,11 @@ namespace Factor
 
             app.UseRouting();
 
+            app.UseCors("MyPolicy");
+
             app.UseAuthentication();
 
             app.UseAuthorization();
-
-            app.UseCors("MyPolicy");
 
             app.UseEndpoints(endpoints =>
             {
@@ -107,7 +111,7 @@ namespace Factor
             app.UseSwaggerUI(c =>
             {
                 c.SwaggerEndpoint("/swagger/v1/swagger.json", "Factor API v1");
-            });            
+            });
         }
     }
 }

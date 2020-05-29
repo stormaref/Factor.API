@@ -1,10 +1,13 @@
 ﻿using Factor.IServices;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Configuration;
-using System;
-using Microsoft.Extensions.Logging;
-using Microsoft.AspNetCore.Cors;
 using Factor.Models;
+using Microsoft.AspNetCore.Cors;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
+using System;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace Factor.Controllers
 {
@@ -27,13 +30,21 @@ namespace Factor.Controllers
         [HttpPost("[action]")]
         public IActionResult Login([FromBody] AdminLoginRequestModel model)
         {
-            if (model.Username == "admin" && model.Password == _configuration.GetValue<string>("AP"))
+            try
             {
-                return Accepted("Login granted");
+                if (model.Username == "admin" && model.Password == _configuration.GetValue<string>("AP"))
+                {
+                    return Accepted("Login granted");
+                }
+                else
+                {
+                    return Unauthorized("Username or password is incorrect");
+                }
             }
-            else
+            catch (Exception e)
             {
-                return Unauthorized("Username or password is incorrect");
+                _logger.LogError(e, e.Message);
+                return Problem();
             }
         }
 
@@ -43,6 +54,60 @@ namespace Factor.Controllers
             try
             {
                 return Ok(_unitOfWork.FactorRepository.GetAll());
+            }
+            catch (Exception e)
+            {
+                _logger.LogError(e, e.Message);
+                return Problem();
+            }
+        }
+
+        [HttpGet("[action]")]
+        public IActionResult GetUserFactors([FromQuery]string phone)
+        {
+            try
+            {
+                if (!_unitOfWork.UserRepository.GetDbSet().Any(u => u.Phone == phone))
+                {
+                    return NotFound("User not found");
+                }
+                return Ok(_unitOfWork.FactorRepository.GetDbSet().Where(f => f.User.Phone == phone).OrderBy(f => f.UploadTime).AsEnumerable());
+            }
+            catch (Exception e)
+            {
+                _logger.LogError(e, e.Message);
+                return Problem();
+            }
+        }
+
+        [HttpGet("[action]")]
+        public async Task<IActionResult> GetFactor([FromQuery]string id)
+        {
+            try
+            {
+                var factor = await _unitOfWork.FactorRepository.GetDbSet().SingleOrDefaultAsync(f => f.Id.ToString() == id);
+                if (factor != null)
+                {
+                    return Ok(factor);
+                }
+                else
+                {
+                    return NotFound();
+                }
+            }
+            catch (Exception e)
+            {
+                _logger.LogError(e, e.Message);
+                return Problem();
+            }
+        }
+
+        [HttpGet("[action]")]
+        public IActionResult GetAllUsers()
+        {
+            try
+            {
+                return Ok(_unitOfWork.UserRepository.GetAll());
             }
             catch (Exception e)
             {

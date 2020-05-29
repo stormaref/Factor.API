@@ -1,5 +1,6 @@
 ﻿using Factor.IServices;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
@@ -12,6 +13,7 @@ namespace Factor.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [EnableCors("MyPolicy")]
     public class UploadController : ControllerBase
     {
         private readonly ILogger<UploadController> _logger;
@@ -35,7 +37,7 @@ namespace Factor.Controllers
                 file.File.OpenReadStream().Read(bytes, 0, bytes.Length);
                 var identity = HttpContext.User.Identity as ClaimsIdentity;
                 var id = identity.Claims.ElementAt(0).Value.Split(' ').Last();
-                var factor = new Models.Factor(bytes, id,DateTime.Now);
+                var factor = new Models.Factor(bytes, DateTime.Now);
                 factor.User = await _authService.GetUser(id);
                 try
                 {
