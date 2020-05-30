@@ -8,6 +8,10 @@ namespace Factor.Services
     public class UnitOfWork : IUnitOfWork
     {
         private readonly DatabaseContext _databasecontext;
+        public UnitOfWork(DatabaseContext databasecontext)
+        {
+            _databasecontext = databasecontext;
+        }
 
         private IRepository<User> _userRepository;
         public IRepository<User> UserRepository
@@ -25,11 +29,6 @@ namespace Factor.Services
         public IRepository<Models.Factor> FactorRepository
         {
             get { return _factorRepository ??= new Repository<Models.Factor>(_databasecontext); }
-        }
-
-        public UnitOfWork(DatabaseContext databasecontext)
-        {
-            _databasecontext = databasecontext;
         }
 
         public void Commit()

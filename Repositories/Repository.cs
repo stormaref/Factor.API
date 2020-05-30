@@ -49,7 +49,7 @@ namespace Factor.Repositories
             if (entity == null) throw new ArgumentNullException("entity");
             _context.SaveChanges();
         }
-        public DbSet<T> GetDbSet()
+        public DbSet<T> GetDbContext()
         {
             return _entities;
         }

@@ -36,15 +36,16 @@ namespace Factor.Controllers
         {
             try
             {
-                User user = await _unitOfWork.UserRepository.GetDbSet().SingleOrDefaultAsync(u => u.Phone == phone);
+                User user = await _unitOfWork.UserRepository.GetDbContext().SingleOrDefaultAsync(u => u.Phone == phone);
                 var code = StaticTools.GenerateCode();
                 var response = await _messageService.SendSMS(phone, code);
                 if (user == null)
                 {
-                    SMSVerification verification = new SMSVerification(code, phone);
-                    User newUser = new User(phone);
                     try
                     {
+                        SMSVerification verification = new SMSVerification(code, phone);
+                        User newUser = new User(phone);
+                        newUser.Role = "User";
                         _unitOfWork.UserRepository.Insert(newUser);
                         verification.User = newUser;
                         _unitOfWork.VerificationRepository.Insert(verification);
@@ -59,7 +60,7 @@ namespace Factor.Controllers
                 }
                 else
                 {
-                    var verification = await _unitOfWork.VerificationRepository.GetDbSet().SingleOrDefaultAsync(v => v.User.Phone == phone);
+                    var verification = await _unitOfWork.VerificationRepository.GetDbContext().SingleOrDefaultAsync(v => v.User.Phone == phone);
                     try
                     {
                         verification.Code = code;
@@ -89,7 +90,8 @@ namespace Factor.Controllers
             {
                 var identity = HttpContext.User.Identity as ClaimsIdentity;
                 var number = identity.Claims.ElementAt(1).Value.Split(' ').Last();
-                return Ok(await _unitOfWork.UserRepository.GetDbSet().SingleOrDefaultAsync(u => u.Phone == number));
+                var claims = identity.Claims;
+                return Ok(await _unitOfWork.UserRepository.GetDbContext().SingleOrDefaultAsync(u => u.Phone == number));
             }
             catch (Exception e)
             {
@@ -103,7 +105,7 @@ namespace Factor.Controllers
         {
             try
             {
-                var model = await _unitOfWork.VerificationRepository.GetDbSet().SingleOrDefaultAsync(v => v.Phone == phone);
+                var model = await _unitOfWork.VerificationRepository.GetDbContext().SingleOrDefaultAsync(v => v.Phone == phone);
                 if (model == null)
                 {
                     return BadRequest("Phone is not regestred yet");
@@ -137,7 +139,7 @@ namespace Factor.Controllers
         {
             try
             {
-                var model = await _unitOfWork.VerificationRepository.GetDbSet().SingleOrDefaultAsync(v => v.Phone == phone);
+                var model = await _unitOfWork.VerificationRepository.GetDbContext().SingleOrDefaultAsync(v => v.Phone == phone);
                 if (model == null)
                 {
                     return NotFound("Phone number is incorrect");
@@ -146,7 +148,7 @@ namespace Factor.Controllers
                 {
                     if (model.Code == code)
                     {
-                        var user = await _unitOfWork.UserRepository.GetDbSet().SingleOrDefaultAsync(u => u.Phone == model.Phone);
+                        var user = await _unitOfWork.UserRepository.GetDbContext().SingleOrDefaultAsync(u => u.Phone == model.Phone);
                         if (user == null)
                         {
                             _logger.Log(LogLevel.Error, new Exception("database error"), "cannot get user by phone", model);

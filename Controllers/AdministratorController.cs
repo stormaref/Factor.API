@@ -67,11 +67,11 @@ namespace Factor.Controllers
         {
             try
             {
-                if (!_unitOfWork.UserRepository.GetDbSet().Any(u => u.Phone == phone))
+                if (!_unitOfWork.UserRepository.GetDbContext().Any(u => u.Phone == phone))
                 {
                     return NotFound("User not found");
                 }
-                return Ok(_unitOfWork.FactorRepository.GetDbSet().Where(f => f.User.Phone == phone).OrderBy(f => f.UploadTime).AsEnumerable());
+                return Ok(_unitOfWork.FactorRepository.GetDbContext().Where(f => f.User.Phone == phone).OrderBy(f => f.UploadTime).AsEnumerable());
             }
             catch (Exception e)
             {
@@ -85,7 +85,7 @@ namespace Factor.Controllers
         {
             try
             {
-                var factor = await _unitOfWork.FactorRepository.GetDbSet().SingleOrDefaultAsync(f => f.Id.ToString() == id);
+                var factor = await _unitOfWork.FactorRepository.GetDbContext().SingleOrDefaultAsync(f => f.Id.ToString() == id);
                 if (factor != null)
                 {
                     return Ok(factor);

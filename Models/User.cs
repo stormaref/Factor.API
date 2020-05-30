@@ -9,6 +9,7 @@ namespace Factor.Models
         public string LastName { get; set; }
         public ICollection<Factor> Factors { get; set; }
         public SMSVerification Verification { get; set; }
+        public string Role { get; set; }
         public User(string phone)
         {
             Phone = phone;
