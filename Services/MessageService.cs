@@ -15,7 +15,7 @@ namespace Factor.Services
     {
         private readonly ILogger<MessageService> _logger;
         private readonly IConfiguration _configuration;
-        private SMSTokenRequest SMSToken;
+        private readonly SMSTokenRequest SMSToken;
 
         public MessageService(ILogger<MessageService> logger, IConfiguration configuration)
         {

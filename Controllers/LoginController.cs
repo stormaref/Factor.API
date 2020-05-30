@@ -21,7 +21,7 @@ namespace Factor.Controllers
         private readonly IMessageService _messageService;
         private readonly IAuthService _authService;
         private readonly ILogger<LoginController> _logger;
-        private IUnitOfWork _unitOfWork;
+        private readonly IUnitOfWork _unitOfWork;
 
         public LoginController(IMessageService messageService, IAuthService authService, ILogger<LoginController> logger, IUnitOfWork unitOfWork)
         {

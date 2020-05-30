@@ -10,7 +10,7 @@ namespace Factor.Repositories
     public class Repository<T> : IRepository<T> where T : BaseEntity
     {
         protected readonly DatabaseContext _context;
-        private DbSet<T> _entities;
+        private readonly DbSet<T> _entities;
 
         public Repository(DatabaseContext context)
         {
@@ -20,7 +20,10 @@ namespace Factor.Repositories
 
         public void Delete(Guid id)
         {
-            if (id == null) throw new ArgumentNullException("entity");
+            if (id == null)
+            {
+                throw new ArgumentNullException("entity");
+            }
 
             T entity = _entities.SingleOrDefault(s => s.Id == id);
             _entities.Remove(entity);
@@ -39,14 +42,21 @@ namespace Factor.Repositories
 
         public void Insert(T entity)
         {
-            if (entity == null) throw new ArgumentNullException("entity");
+            if (entity == null)
+            {
+                throw new ArgumentNullException("entity");
+            }
 
             _entities.Add(entity);
             _context.SaveChanges();
         }
         public void Update(T entity)
         {
-            if (entity == null) throw new ArgumentNullException("entity");
+            if (entity == null)
+            {
+                throw new ArgumentNullException("entity");
+            }
+
             _context.SaveChanges();
         }
         public DbSet<T> GetDbContext()

@@ -14,22 +14,13 @@ namespace Factor.Services
         }
 
         private IRepository<User> _userRepository;
-        public IRepository<User> UserRepository
-        {
-            get { return _userRepository ??= new Repository<User>(_databasecontext); }
-        }
+        public IRepository<User> UserRepository => _userRepository ??= new Repository<User>(_databasecontext);
 
         private IRepository<SMSVerification> _verificationRepository;
-        public IRepository<SMSVerification> VerificationRepository
-        {
-            get { return _verificationRepository ??= new Repository<SMSVerification>(_databasecontext); }
-        }
+        public IRepository<SMSVerification> VerificationRepository => _verificationRepository ??= new Repository<SMSVerification>(_databasecontext);
 
         private IRepository<Models.Factor> _factorRepository;
-        public IRepository<Models.Factor> FactorRepository
-        {
-            get { return _factorRepository ??= new Repository<Models.Factor>(_databasecontext); }
-        }
+        public IRepository<Models.Factor> FactorRepository => _factorRepository ??= new Repository<Models.Factor>(_databasecontext);
 
         public void Commit()
         {

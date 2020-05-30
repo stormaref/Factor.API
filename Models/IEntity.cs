@@ -2,7 +2,7 @@
 
 namespace Factor.Models
 {
-    interface IEntity
+    internal interface IEntity
     {
         public Guid Id { get; set; }
     }
