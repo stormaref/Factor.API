@@ -28,16 +28,16 @@ namespace Factor.Services
         {
             using (HttpClient client = new HttpClient())
             {
-                var data = new StringContent(JsonSerializer.Serialize(SMSToken), Encoding.UTF8, "application/json");
+                StringContent data = new StringContent(JsonSerializer.Serialize(SMSToken), Encoding.UTF8, "application/json");
                 string url = "http://RestfulSms.com/api/Token";
-                var response = await client.PostAsync(url, data);
-                var @object = JObject.Parse(await response.Content.ReadAsStringAsync());
+                HttpResponseMessage response = await client.PostAsync(url, data);
+                JObject @object = JObject.Parse(await response.Content.ReadAsStringAsync());
                 if (@object.Value<bool>("IsSuccessful"))
                 {
                     string token = @object.Value<string>("TokenKey");
                     client.DefaultRequestHeaders.Add("x-sms-ir-secure-token", token);
-                    var messageData = new StringContent(JsonSerializer.Serialize(new SMSVerificationRequest(code, receptor)), Encoding.UTF8, "application/json");
-                    var messageResponse = await client.PostAsync("http://RestfulSms.com/api/VerificationCode", messageData);
+                    StringContent messageData = new StringContent(JsonSerializer.Serialize(new SMSVerificationRequest(code, receptor)), Encoding.UTF8, "application/json");
+                    HttpResponseMessage messageResponse = await client.PostAsync("http://RestfulSms.com/api/VerificationCode", messageData);
                     JObject messageJObject = JObject.Parse(await messageResponse.Content.ReadAsStringAsync());
                     if (messageJObject.Value<bool>("IsSuccessful"))
                     {

@@ -1,10 +1,12 @@
 ﻿using Factor.IServices;
+using Factor.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
@@ -29,38 +31,66 @@ namespace Factor.Controllers
 
         [Authorize]
         [HttpPost("[action]")]
-        public async Task<IActionResult> UploadFile([FromForm]ImageFile file)
+        public async Task<IActionResult> UploadFiles([FromForm]ImageFilesRequestModel model)
         {
-            if (file != null && file.File.ContentType == "image/jpeg")
+            try
             {
-                var bytes = new byte[file.File.Length];
-                file.File.OpenReadStream().Read(bytes, 0, bytes.Length);
-                var identity = HttpContext.User.Identity as ClaimsIdentity;
-                var id = identity.Claims.ElementAt(0).Value.Split(' ').Last();
-                var factor = new Models.Factor(bytes, DateTime.Now);
-                factor.User = await _authService.GetUser(id);
-                try
+                if (CheckFiles(model))
                 {
-                    _unitOfWork.FactorRepository.Insert(factor);
-                    _unitOfWork.Commit();
-                    return Ok(factor);
+                    List<Image> vs = new List<Image>();
+                    foreach (IFormFile file in model.Files)
+                    {
+                        byte[] bytes = new byte[file.Length];
+                        file.OpenReadStream().Read(bytes, 0, bytes.Length);
+                        vs.Add(new Image { Bytes = bytes });
+                    }
+                    ClaimsIdentity identity = HttpContext.User.Identity as ClaimsIdentity;
+                    string id = identity.Claims.ElementAt(0).Value.Split(' ').Last();
+                    FactorItem factor = new FactorItem(DateTime.Now)
+                    {
+                        Images = vs,
+                        User = await _authService.GetUser(id)
+                    };
+                    try
+                    {
+                        _unitOfWork.FactorRepository.Insert(factor);
+                        _unitOfWork.Commit();
+                        return Ok(factor);
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.Log(LogLevel.Error, ex, "transaction rollback", factor);
+                        _unitOfWork.Rollback();
+                        return Problem();
+                    }
                 }
-                catch (Exception ex)
+                else
                 {
-                    _logger.Log(LogLevel.Error, ex, "transaction rollback", factor);
-                    _unitOfWork.Rollback();
-                    return Problem();
+                    return BadRequest("All images must be jpeg");
                 }
             }
-            else
+            catch (Exception e)
             {
-                return BadRequest("File must be a jpeg imgae");
+                _logger.LogError(e, e.Message);
+                return Problem();
             }
+        }
+
+        private bool CheckFiles(ImageFilesRequestModel model)
+        {
+            foreach (IFormFile file in model.Files)
+            {
+                if (file == null || file.ContentType != "image/jpeg")
+                {
+                    return false;
+                }
+            }
+            return true;
         }
     }
 
-    public class ImageFile
+    public class ImageFilesRequestModel
     {
-        public IFormFile File { get; set; }
+        public List<IFormFile> Files { get; set; }
     }
 }

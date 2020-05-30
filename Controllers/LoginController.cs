@@ -5,8 +5,10 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using System;
+using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
@@ -22,13 +24,15 @@ namespace Factor.Controllers
         private readonly IAuthService _authService;
         private readonly ILogger<LoginController> _logger;
         private readonly IUnitOfWork _unitOfWork;
+        private readonly IConfiguration _configuration;
 
-        public LoginController(IMessageService messageService, IAuthService authService, ILogger<LoginController> logger, IUnitOfWork unitOfWork)
+        public LoginController(IMessageService messageService, IAuthService authService, ILogger<LoginController> logger, IUnitOfWork unitOfWork, IConfiguration configuration)
         {
             _messageService = messageService;
             _authService = authService;
             _logger = logger;
             _unitOfWork = unitOfWork;
+            _configuration = configuration;
         }
 
         [HttpPost("[action]")]
@@ -36,43 +40,58 @@ namespace Factor.Controllers
         {
             try
             {
-                User user = await _unitOfWork.UserRepository.GetDbContext().SingleOrDefaultAsync(u => u.Phone == phone);
-                var code = StaticTools.GenerateCode();
-                var response = await _messageService.SendSMS(phone, code);
-                if (user == null)
+                if (StaticTools.PhoneValidator(phone))
                 {
-                    try
+                    User user = await _unitOfWork.UserRepository.GetDbContext().SingleOrDefaultAsync(u => u.Phone == phone);
+                    long code = StaticTools.GenerateCode();
+                    string response = await _messageService.SendSMS(phone, code);
+                    if (user == null)
                     {
-                        SMSVerification verification = new SMSVerification(code, phone);
-                        User newUser = new User(phone);
-                        newUser.Role = "User";
-                        _unitOfWork.UserRepository.Insert(newUser);
-                        verification.User = newUser;
-                        _unitOfWork.VerificationRepository.Insert(verification);
-                        _unitOfWork.Commit();
-                        return Ok("Code sent");
+                        try
+                        {
+                            SMSVerification verification = new SMSVerification(code, phone);
+                            User newUser = new User(phone);
+                            bool check = _configuration.GetSection("AdminPhones").Get<string[]>().Any(s => s == phone);
+                            if (check)
+                            {
+                                newUser.Role = "Admin";
+                            }
+                            else
+                            {
+                                newUser.Role = "User";
+                            }
+                            _unitOfWork.UserRepository.Insert(newUser);
+                            verification.User = newUser;
+                            _unitOfWork.VerificationRepository.Insert(verification);
+                            _unitOfWork.Commit();
+                            return Ok("Code sent");
+                        }
+                        catch (Exception)
+                        {
+                            _unitOfWork.Rollback();
+                            return Problem("Database error");
+                        }
                     }
-                    catch (Exception)
+                    else
                     {
-                        _unitOfWork.Rollback();
-                        return Problem("Database error");
+                        SMSVerification verification = await _unitOfWork.VerificationRepository.GetDbContext().SingleOrDefaultAsync(v => v.User.Phone == phone);
+                        try
+                        {
+                            verification.Code = code;
+                            _unitOfWork.VerificationRepository.Update(verification);
+                            _unitOfWork.Commit();
+                            return Ok("Code sent");
+                        }
+                        catch (Exception)
+                        {
+                            _unitOfWork.Rollback();
+                            return Problem("Database error");
+                        }
                     }
                 }
                 else
                 {
-                    var verification = await _unitOfWork.VerificationRepository.GetDbContext().SingleOrDefaultAsync(v => v.User.Phone == phone);
-                    try
-                    {
-                        verification.Code = code;
-                        _unitOfWork.VerificationRepository.Update(verification);
-                        _unitOfWork.Commit();
-                        return Ok("Code sent");
-                    }
-                    catch (Exception)
-                    {
-                        _unitOfWork.Rollback();
-                        return Problem("Database error");
-                    }
+                    return BadRequest(StaticTools.PhoneValidationError);
                 }
             }
             catch (Exception e)
@@ -88,9 +107,9 @@ namespace Factor.Controllers
         {
             try
             {
-                var identity = HttpContext.User.Identity as ClaimsIdentity;
-                var number = identity.Claims.ElementAt(1).Value.Split(' ').Last();
-                var claims = identity.Claims;
+                ClaimsIdentity identity = HttpContext.User.Identity as ClaimsIdentity;
+                string number = identity.Claims.ElementAt(1).Value.Split(' ').Last();
+                System.Collections.Generic.IEnumerable<Claim> claims = identity.Claims;
                 return Ok(await _unitOfWork.UserRepository.GetDbContext().SingleOrDefaultAsync(u => u.Phone == number));
             }
             catch (Exception e)
@@ -105,17 +124,17 @@ namespace Factor.Controllers
         {
             try
             {
-                var model = await _unitOfWork.VerificationRepository.GetDbContext().SingleOrDefaultAsync(v => v.Phone == phone);
+                SMSVerification model = await _unitOfWork.VerificationRepository.GetDbContext().SingleOrDefaultAsync(v => v.Phone == phone);
                 if (model == null)
                 {
                     return BadRequest("Phone is not regestred yet");
                 }
                 else
                 {
-                    var code = StaticTools.GenerateCode();
+                    long code = StaticTools.GenerateCode();
                     try
                     {
-                        var response = await _messageService.SendSMS(phone, code);
+                        string response = await _messageService.SendSMS(phone, code);
                         model.Code = code;
                         _unitOfWork.VerificationRepository.Update(model);
                         _unitOfWork.Commit();
@@ -135,26 +154,26 @@ namespace Factor.Controllers
         }
 
         [HttpPost("[action]")]
-        public async Task<IActionResult> VerifyCode([FromQuery]string phone, [FromQuery]long code)
+        public async Task<IActionResult> VerifyCode([FromBody] VerifyCodeRequestModel requestModel)
         {
             try
             {
-                var model = await _unitOfWork.VerificationRepository.GetDbContext().SingleOrDefaultAsync(v => v.Phone == phone);
+                SMSVerification model = await _unitOfWork.VerificationRepository.GetDbContext().SingleOrDefaultAsync(v => v.Phone == requestModel.Phone);
                 if (model == null)
                 {
                     return NotFound("Phone number is incorrect");
                 }
                 else
                 {
-                    if (model.Code == code)
+                    if (model.Code == requestModel.Code)
                     {
-                        var user = await _unitOfWork.UserRepository.GetDbContext().SingleOrDefaultAsync(u => u.Phone == model.Phone);
+                        User user = await _unitOfWork.UserRepository.GetDbContext().SingleOrDefaultAsync(u => u.Phone == model.Phone);
                         if (user == null)
                         {
                             _logger.Log(LogLevel.Error, new Exception("database error"), "cannot get user by phone", model);
                             return Problem("Database error");
                         }
-                        return Ok(new TokenResponseModel(phone, _authService.CreateToken(user)));
+                        return Ok(new TokenResponseModel(requestModel.Phone, _authService.CreateToken(user)));
                     }
                     else
                     {
@@ -167,6 +186,16 @@ namespace Factor.Controllers
                 _logger.LogError(e, e.Message);
                 return Problem();
             }
+        }
+
+        public class VerifyCodeRequestModel
+        {
+            [Required(AllowEmptyStrings = false, ErrorMessage = "Phone number is empty")]
+            [RegularExpression(StaticTools.PhoneRegex, ErrorMessage = "Phone number is invalid")]
+            public string Phone { get; set; }
+            [RegularExpression("^[0-9]{4,8}$", ErrorMessage = "Code lenght must be between 4 and 8")]
+            [Required(AllowEmptyStrings = false, ErrorMessage = "Code is empty")]
+            public long Code { get; set; }
         }
     }
 }
