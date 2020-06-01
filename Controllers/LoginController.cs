@@ -115,7 +115,7 @@ namespace Factor.Controllers
             catch (Exception e)
             {
                 _logger.LogError(e, e.Message);
-                return Problem();
+                return Problem(e.Message);
             }
         }
 
@@ -149,7 +149,7 @@ namespace Factor.Controllers
             catch (Exception e)
             {
                 _logger.LogError(e, e.Message);
-                return Problem();
+                return Problem(e.Message);
             }
         }
 
@@ -184,7 +184,7 @@ namespace Factor.Controllers
             catch (Exception e)
             {
                 _logger.LogError(e, e.Message);
-                return Problem();
+                return Problem(e.Message);
             }
         }
 

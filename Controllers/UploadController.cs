@@ -61,7 +61,7 @@ namespace Factor.Controllers
                     {
                         _logger.Log(LogLevel.Error, ex, "transaction rollback", factor);
                         _unitOfWork.Rollback();
-                        return Problem();
+                        return Problem(e.Message);
                     }
                 }
                 else
@@ -72,7 +72,7 @@ namespace Factor.Controllers
             catch (Exception e)
             {
                 _logger.LogError(e, e.Message);
-                return Problem();
+                return Problem(e.Message);
             }
         }
 
