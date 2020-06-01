@@ -123,11 +123,11 @@ namespace Factor.Controllers
 
         [HttpGet("[action]")]
         [Authorize(Roles = "Admin")]
-        public IActionResult GetAllFactors()
+        public IActionResult GetAllUndoneFactors()
         {
             try
             {
-                return Ok(_unitOfWork.FactorRepository.GetAll());
+                return Ok(_unitOfWork.FactorRepository.GetDbContext().Where(f => !f.IsDone).OrderBy(f => f.UploadTime).ThenBy(f => f.User).AsAsyncEnumerable());
             }
             catch (Exception e)
             {
@@ -135,6 +135,22 @@ namespace Factor.Controllers
                 return Problem(e.Message);
             }
         }
+
+        [HttpGet("[action]")]
+        [Authorize(Roles = "Admin")]
+        public IActionResult GetFactorsWithTimeSpan([FromBody]TimeSpanRequestModel model)
+        {
+            try
+            {
+                return Ok(_unitOfWork.FactorRepository.GetDbContext().Where(f => StaticTools.DateChecker(f.UploadTime,model.StartDate,model.EndDate)).OrderBy(f => f.User).ThenBy(f => f.UploadTime).AsAsyncEnumerable());
+            }
+            catch (Exception e)
+            {
+                _logger.LogError(e, e.Message);
+                return Problem(e.Message);
+            }
+        }
+
 
         [HttpGet("[action]")]
         [Authorize(Roles = "Admin")]
@@ -148,7 +164,7 @@ namespace Factor.Controllers
                     {
                         return NotFound("User not found");
                     }
-                    return Ok(_unitOfWork.FactorRepository.GetDbContext().Where(f => f.User.Phone == phone).OrderBy(f => f.UploadTime).AsEnumerable());
+                    return Ok(_unitOfWork.FactorRepository.GetDbContext().Where(f => f.User.Phone == phone).OrderBy(f => f.UploadTime).AsAsyncEnumerable());
                 }
                 else
                 {

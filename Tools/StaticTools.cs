@@ -18,5 +18,10 @@ namespace Factor.Tools
         {
             return Regex.IsMatch(phone, PhoneRegex);
         }
+
+        public static bool DateChecker(DateTime date,DateTime startDate, DateTime endDate)
+        {
+            return (date >= startDate && date <= endDate);
+        }
     }
 }

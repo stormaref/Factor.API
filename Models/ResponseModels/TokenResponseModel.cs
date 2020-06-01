@@ -1,4 +1,4 @@
-﻿namespace Factor.Models
+﻿namespace Factor.Models.ResponseModels
 {
     public class TokenResponseModel
     {
