@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
@@ -61,7 +62,7 @@ namespace Factor.Controllers
                     {
                         _logger.Log(LogLevel.Error, ex, "transaction rollback", factor);
                         _unitOfWork.Rollback();
-                        return Problem(e.Message);
+                        return Problem("database rollback");
                     }
                 }
                 else
@@ -91,6 +92,7 @@ namespace Factor.Controllers
 
     public class ImageFilesRequestModel
     {
+        [Required]
         public List<IFormFile> Files { get; set; }
     }
 }

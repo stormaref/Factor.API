@@ -60,7 +60,7 @@ namespace Factor.Controllers
             }
         }
 
-        private async Task<IActionResult> AdminLoginHandler(string phone)
+        private async Task<IActionResult> AdminLoginHandler([FromQuery]string phone)
         {
             try
             {
