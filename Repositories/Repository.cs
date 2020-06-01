@@ -1,5 +1,4 @@
 ﻿using Factor.IRepositories;
-using Factor.Models;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;

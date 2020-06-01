@@ -1,5 +1,7 @@
 ﻿using Factor.IServices;
 using Factor.Models;
+using Factor.Models.RequestModels;
+using Factor.Models.ResponseModels;
 using Factor.Tools;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Cors;
@@ -8,7 +10,6 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using System;
-using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
@@ -186,6 +187,6 @@ namespace Factor.Controllers
                 _logger.LogError(e, e.Message);
                 return Problem(e.Message);
             }
-        }        
+        }
     }
 }

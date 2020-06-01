@@ -1,5 +1,6 @@
 ﻿using Factor.IServices;
 using Factor.Models;
+using Factor.Models.RequestModels;
 using Factor.Tools;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Cors;
@@ -142,7 +143,7 @@ namespace Factor.Controllers
         {
             try
             {
-                return Ok(_unitOfWork.FactorRepository.GetDbContext().Where(f => StaticTools.DateChecker(f.UploadTime,model.StartDate,model.EndDate)).OrderBy(f => f.User).ThenBy(f => f.UploadTime).AsAsyncEnumerable());
+                return Ok(_unitOfWork.FactorRepository.GetDbContext().Where(f => StaticTools.DateChecker(f.UploadTime, model.StartDate, model.EndDate)).OrderBy(f => f.User).ThenBy(f => f.UploadTime).AsAsyncEnumerable());
             }
             catch (Exception e)
             {
