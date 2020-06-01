@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Factor.Repositories;
+using System;
 
 namespace Factor.Models
 {

@@ -1,4 +1,6 @@
-﻿namespace Factor.Models
+﻿using Factor.Repositories;
+
+namespace Factor.Models
 {
     public class Image : BaseEntity
     {

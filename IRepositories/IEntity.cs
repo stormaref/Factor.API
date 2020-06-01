@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Factor.Models
+namespace Factor.IRepositories
 {
     internal interface IEntity
     {

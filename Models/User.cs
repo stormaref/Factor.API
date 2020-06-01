@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using Factor.Repositories;
+using System.Collections.Generic;
 
 namespace Factor.Models
 {

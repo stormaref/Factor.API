@@ -1,6 +1,7 @@
-﻿using System;
+﻿using Factor.IRepositories;
+using System;
 
-namespace Factor.Models
+namespace Factor.Repositories
 {
     public class BaseEntity : IEntity
     {
