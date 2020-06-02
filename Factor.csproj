@@ -13,6 +13,10 @@
     <Compile Remove="Migrations\20200527111615_InitialCreate.Designer.cs" />
     <Compile Remove="Migrations\20200527111723_InitialCreate.cs" />
     <Compile Remove="Migrations\20200527111723_InitialCreate.Designer.cs" />
+    <Compile Remove="Migrations\20200602183738_newafterjalase.cs" />
+    <Compile Remove="Migrations\20200602183738_newafterjalase.Designer.cs" />
+    <Compile Remove="Migrations\20200602185555_initialremovefk.cs" />
+    <Compile Remove="Migrations\20200602185555_initialremovefk.Designer.cs" />
   </ItemGroup>
 
   <ItemGroup>
@@ -25,7 +29,7 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="3.1.2" ExcludeAssets="All" />
+    <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="3.1.3" ExcludeAssets="All" />
     <PackageReference Include="Swashbuckle.AspNetCore" Version="5.4.1" />
   </ItemGroup>
 

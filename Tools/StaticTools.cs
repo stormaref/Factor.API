@@ -1,4 +1,7 @@
-﻿using System;
+﻿using Factor.Models;
+using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Text.RegularExpressions;
 
 namespace Factor.Tools
@@ -22,6 +25,11 @@ namespace Factor.Tools
         public static bool DateChecker(DateTime date, DateTime startDate, DateTime endDate)
         {
             return (date >= startDate && date <= endDate);
+        }
+
+        public static List<Contact> Contacts(this User user)
+        {
+            return user.PreFactors.Select(f => f.SubmittedFactor.Contact).Distinct().ToList();
         }
     }
 }

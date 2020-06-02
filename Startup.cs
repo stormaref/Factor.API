@@ -44,7 +44,6 @@ namespace Factor
                        .WithExposedHeaders("Access-Control-Allow-Origin");
             }));
 
-            //services.AddDbContext<DatabaseContext>(opts => opts.UseInMemoryDatabase("database"));
             services.AddDbContext<DatabaseContext>(opts => opts.UseSqlServer(Configuration.GetValue<string>("ConnectionString")));
             services.AddScoped<DatabaseContext>();
             services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
@@ -52,7 +51,6 @@ namespace Factor
 
             services.AddScoped<IMessageService, MessageService>();
             services.AddScoped<IAuthService, AuthService>();
-
 
             services.AddAuthentication(x =>
             {

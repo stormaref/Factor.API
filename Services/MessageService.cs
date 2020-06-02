@@ -1,5 +1,5 @@
 ﻿using Factor.IServices;
-using Factor.Models;
+using Factor.Models.RequestModels;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json.Linq;
@@ -15,13 +15,13 @@ namespace Factor.Services
     {
         private readonly ILogger<MessageService> _logger;
         private readonly IConfiguration _configuration;
-        private readonly SMSTokenRequest SMSToken;
+        private readonly SMSTokenRequestModel SMSToken;
 
         public MessageService(ILogger<MessageService> logger, IConfiguration configuration)
         {
             _logger = logger;
             _configuration = configuration;
-            SMSToken = new SMSTokenRequest(_configuration.GetSection("SMS").GetSection("UserApiKey").Value, _configuration.GetSection("SMS").GetSection("SecretKey").Value);
+            SMSToken = new SMSTokenRequestModel(_configuration.GetSection("SMS").GetSection("UserApiKey").Value, _configuration.GetSection("SMS").GetSection("SecretKey").Value);
         }
 
         public async Task<string> SendSMS(string receptor, long code)
@@ -36,7 +36,7 @@ namespace Factor.Services
                 {
                     string token = @object.Value<string>("TokenKey");
                     client.DefaultRequestHeaders.Add("x-sms-ir-secure-token", token);
-                    StringContent messageData = new StringContent(JsonSerializer.Serialize(new SMSVerificationRequest(code, receptor)), Encoding.UTF8, "application/json");
+                    StringContent messageData = new StringContent(JsonSerializer.Serialize(new SMSVerificationRequestModel(code, receptor)), Encoding.UTF8, "application/json");
                     HttpResponseMessage messageResponse = await client.PostAsync("http://RestfulSms.com/api/VerificationCode", messageData);
                     JObject messageJObject = JObject.Parse(await messageResponse.Content.ReadAsStringAsync());
                     if (messageJObject.Value<bool>("IsSuccessful"))

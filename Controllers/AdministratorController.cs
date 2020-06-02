@@ -185,7 +185,7 @@ namespace Factor.Controllers
         {
             try
             {
-                FactorItem factor = await _unitOfWork.FactorRepository.GetDbContext().SingleOrDefaultAsync(f => f.Id.ToString() == id);
+                PreFactor factor = await _unitOfWork.FactorRepository.GetDbContext().SingleOrDefaultAsync(f => f.Id.ToString() == id);
                 if (factor != null)
                 {
                     return Ok(factor);

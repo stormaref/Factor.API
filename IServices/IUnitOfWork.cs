@@ -7,7 +7,7 @@ namespace Factor.IServices
     {
         IRepository<User> UserRepository { get; }
         IRepository<SMSVerification> VerificationRepository { get; }
-        IRepository<Models.FactorItem> FactorRepository { get; }
+        IRepository<Models.PreFactor> FactorRepository { get; }
         void Commit();
         void Rollback();
     }

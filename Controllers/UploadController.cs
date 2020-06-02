@@ -1,5 +1,6 @@
 ﻿using Factor.IServices;
 using Factor.Models;
+using Factor.Models.RequestModels;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Http;
@@ -47,10 +48,11 @@ namespace Factor.Controllers
                     }
                     ClaimsIdentity identity = HttpContext.User.Identity as ClaimsIdentity;
                     string id = identity.Claims.ElementAt(0).Value.Split(' ').Last();
-                    FactorItem factor = new FactorItem(DateTime.Now)
+                    PreFactor factor = new PreFactor(DateTime.Now)
                     {
                         Images = vs,
                         User = await _authService.GetUser(id)
+                        //todo add description if available
                     };
                     try
                     {
@@ -90,9 +92,5 @@ namespace Factor.Controllers
         }
     }
 
-    public class ImageFilesRequestModel
-    {
-        [Required]
-        public List<IFormFile> Files { get; set; }
-    }
+    
 }

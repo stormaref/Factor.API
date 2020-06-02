@@ -19,8 +19,8 @@ namespace Factor.Services
         private IRepository<SMSVerification> _verificationRepository;
         public IRepository<SMSVerification> VerificationRepository => _verificationRepository ??= new Repository<SMSVerification>(_databasecontext);
 
-        private IRepository<FactorItem> _factorRepository;
-        public IRepository<FactorItem> FactorRepository => _factorRepository ??= new Repository<FactorItem>(_databasecontext);
+        private IRepository<PreFactor> _factorRepository;
+        public IRepository<PreFactor> FactorRepository => _factorRepository ??= new Repository<PreFactor>(_databasecontext);
 
         public void Commit()
         {
