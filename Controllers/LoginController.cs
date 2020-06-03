@@ -43,7 +43,7 @@ namespace Factor.Controllers
             {
                 if (StaticTools.PhoneValidator(phone))
                 {
-                    User user = await _unitOfWork.UserRepository.GetDbContext().SingleOrDefaultAsync(u => u.Phone == phone);
+                    User user = await _unitOfWork.UserRepository.GetDbSet().SingleOrDefaultAsync(u => u.Phone == phone);
                     long code = StaticTools.GenerateCode();
                     string response = await _messageService.SendSMS(phone, code);
                     if (user == null)
@@ -75,7 +75,7 @@ namespace Factor.Controllers
                     }
                     else
                     {
-                        SMSVerification verification = await _unitOfWork.VerificationRepository.GetDbContext().SingleOrDefaultAsync(v => v.User.Phone == phone);
+                        SMSVerification verification = await _unitOfWork.VerificationRepository.GetDbSet().SingleOrDefaultAsync(v => v.User.Phone == phone);
                         try
                         {
                             verification.Code = code;
@@ -111,7 +111,7 @@ namespace Factor.Controllers
                 ClaimsIdentity identity = HttpContext.User.Identity as ClaimsIdentity;
                 string number = identity.Claims.ElementAt(1).Value.Split(' ').Last();
                 System.Collections.Generic.IEnumerable<Claim> claims = identity.Claims;
-                return Ok(await _unitOfWork.UserRepository.GetDbContext().SingleOrDefaultAsync(u => u.Phone == number));
+                return Ok(await _unitOfWork.UserRepository.GetDbSet().SingleOrDefaultAsync(u => u.Phone == number));
             }
             catch (Exception e)
             {
@@ -125,7 +125,7 @@ namespace Factor.Controllers
         {
             try
             {
-                SMSVerification model = await _unitOfWork.VerificationRepository.GetDbContext().SingleOrDefaultAsync(v => v.Phone == phone);
+                SMSVerification model = await _unitOfWork.VerificationRepository.GetDbSet().SingleOrDefaultAsync(v => v.Phone == phone);
                 if (model == null)
                 {
                     return BadRequest("Phone is not regestred yet");
@@ -159,7 +159,7 @@ namespace Factor.Controllers
         {
             try
             {
-                SMSVerification model = await _unitOfWork.VerificationRepository.GetDbContext().SingleOrDefaultAsync(v => v.Phone == requestModel.Phone);
+                SMSVerification model = await _unitOfWork.VerificationRepository.GetDbSet().SingleOrDefaultAsync(v => v.Phone == requestModel.Phone);
                 if (model == null)
                 {
                     return NotFound("Phone number is incorrect");
@@ -168,7 +168,7 @@ namespace Factor.Controllers
                 {
                     if (model.Code == requestModel.Code)
                     {
-                        User user = await _unitOfWork.UserRepository.GetDbContext().SingleOrDefaultAsync(u => u.Phone == model.Phone);
+                        User user = await _unitOfWork.UserRepository.GetDbSet().SingleOrDefaultAsync(u => u.Phone == model.Phone);
                         if (user == null)
                         {
                             _logger.Log(LogLevel.Error, new Exception("database error"), "cannot get user by phone", model);

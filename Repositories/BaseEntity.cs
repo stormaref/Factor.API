@@ -6,5 +6,6 @@ namespace Factor.Repositories
     public class BaseEntity : IEntity
     {
         public Guid Id { get; set; }
+        public DateTime CreationDate { get; set; }
     }
 }

@@ -1,6 +1,7 @@
 ﻿using Factor.Repositories;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Text.Json.Serialization;
 
 namespace Factor.Models
@@ -10,6 +11,7 @@ namespace Factor.Models
         public List<Image> Images { get; set; }
         [JsonIgnore]
         public virtual User User { get; set; }
+        [Required]
         public DateTime UploadTime { get; set; }
         public bool IsDone { get; set; }
         public string Description { get; set; }

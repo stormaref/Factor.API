@@ -1,5 +1,6 @@
 ﻿using Factor.Repositories;
 using System;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Factor.Models
 {
@@ -9,6 +10,7 @@ namespace Factor.Models
         public string Phone { get; set; }
         public User User { get; set; }
         public Guid UserId { get; set; }
+        public bool IsVerified { get; set; }
         public SMSVerification(long code, string phone)
         {
             Code = code;

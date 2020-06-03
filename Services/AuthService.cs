@@ -46,7 +46,7 @@ namespace Factor.Services
 
         public async Task<User> GetUser(string id)
         {
-            return await _unitOfWork.UserRepository.GetDbContext().SingleOrDefaultAsync(u => u.Id.ToString() == id);
+            return await _unitOfWork.UserRepository.GetDbSet().SingleOrDefaultAsync(u => u.Id.ToString() == id);
         }
     }
 }

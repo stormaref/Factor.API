@@ -29,7 +29,7 @@ namespace Factor.Controllers
         public async Task<IActionResult> GetAllUserFactors()
         {
             string id = (HttpContext.User.Identity as ClaimsIdentity).Claims.ElementAt(0).Value.Split(' ').Last();
-            var user = await _unitOfWork.UserRepository.GetDbContext().SingleOrDefaultAsync(u => u.Id.ToString() == id);
+            var user = await _unitOfWork.UserRepository.GetDbSet().SingleOrDefaultAsync(u => u.Id.ToString() == id);
             return Ok(user.PreFactors);
         }
     }

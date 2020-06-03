@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 
 namespace Factor.Repositories
 {
@@ -58,7 +59,11 @@ namespace Factor.Repositories
 
             _context.SaveChanges();
         }
-        public DbSet<T> GetDbContext()
+        public IQueryable<T> Where(Expression<Func<T, bool>> expression)
+        {
+            return _entities.Where(expression);
+        }
+        public DbSet<T> GetDbSet()
         {
             return _entities;
         }

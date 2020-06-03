@@ -67,7 +67,7 @@ namespace Factor.Controllers
             {
                 if (StaticTools.PhoneValidator(phone))
                 {
-                    User user = await _unitOfWork.UserRepository.GetDbContext().SingleOrDefaultAsync(u => u.Phone == phone);
+                    User user = await _unitOfWork.UserRepository.GetDbSet().SingleOrDefaultAsync(u => u.Phone == phone);
                     long code = StaticTools.GenerateCode();
                     string response = await _messageService.SendSMS(phone, code);
                     if (user == null)
@@ -93,7 +93,7 @@ namespace Factor.Controllers
                     }
                     else
                     {
-                        SMSVerification verification = await _unitOfWork.VerificationRepository.GetDbContext().SingleOrDefaultAsync(v => v.User.Phone == phone);
+                        SMSVerification verification = await _unitOfWork.VerificationRepository.GetDbSet().SingleOrDefaultAsync(v => v.User.Phone == phone);
                         try
                         {
                             verification.Code = code;
@@ -128,7 +128,7 @@ namespace Factor.Controllers
         {
             try
             {
-                return Ok(_unitOfWork.FactorRepository.GetDbContext().Where(f => !f.IsDone).OrderBy(f => f.UploadTime).ThenBy(f => f.User).AsAsyncEnumerable());
+                return Ok(_unitOfWork.FactorRepository.Where(f => !f.IsDone).OrderBy(f => f.UploadTime).ThenBy(f => f.User).AsAsyncEnumerable());
             }
             catch (Exception e)
             {
@@ -143,7 +143,7 @@ namespace Factor.Controllers
         {
             try
             {
-                return Ok(_unitOfWork.FactorRepository.GetDbContext().Where(f => StaticTools.DateChecker(f.UploadTime, model.StartDate, model.EndDate)).OrderBy(f => f.User).ThenBy(f => f.UploadTime).AsAsyncEnumerable());
+                return Ok(_unitOfWork.FactorRepository.Where(f => StaticTools.DateChecker(f.UploadTime, model.StartDate, model.EndDate)).OrderBy(f => f.User).ThenBy(f => f.UploadTime).AsAsyncEnumerable());
             }
             catch (Exception e)
             {
@@ -161,11 +161,11 @@ namespace Factor.Controllers
             {
                 if (StaticTools.PhoneValidator(phone))
                 {
-                    if (!_unitOfWork.UserRepository.GetDbContext().Any(u => u.Phone == phone))
+                    if (!_unitOfWork.UserRepository.GetDbSet().Any(u => u.Phone == phone))
                     {
                         return NotFound("User not found");
                     }
-                    return Ok(_unitOfWork.FactorRepository.GetDbContext().Where(f => f.User.Phone == phone).OrderBy(f => f.UploadTime).AsAsyncEnumerable());
+                    return Ok(_unitOfWork.FactorRepository.GetDbSet().Where(f => f.User.Phone == phone).OrderBy(f => f.UploadTime).AsAsyncEnumerable());
                 }
                 else
                 {
@@ -185,7 +185,7 @@ namespace Factor.Controllers
         {
             try
             {
-                PreFactor factor = await _unitOfWork.FactorRepository.GetDbContext().SingleOrDefaultAsync(f => f.Id.ToString() == id);
+                PreFactor factor = await _unitOfWork.FactorRepository.GetDbSet().SingleOrDefaultAsync(f => f.Id.ToString() == id);
                 if (factor != null)
                 {
                     return Ok(factor);
