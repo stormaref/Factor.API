@@ -15,6 +15,8 @@ namespace Factor.Models
         {
             Code = code;
             Phone = phone;
+            CreationDate = DateTime.Now;
+            IsVerified = false;
         }
     }
 }

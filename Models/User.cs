@@ -1,4 +1,5 @@
 ﻿using Factor.Repositories;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 
@@ -17,6 +18,7 @@ namespace Factor.Models
         public User(string phone)
         {
             Phone = phone;
+            CreationDate = DateTime.Now;
         }       
     }
 }

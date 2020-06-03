@@ -174,7 +174,19 @@ namespace Factor.Controllers
                             _logger.Log(LogLevel.Error, new Exception("database error"), "cannot get user by phone", model);
                             return Problem("Database error");
                         }
-                        return Ok(new TokenResponseModel(requestModel.Phone, _authService.CreateToken(user)));
+                        try
+                        {
+                            model.IsVerified = true;
+                            _unitOfWork.VerificationRepository.Update(model);
+                            _unitOfWork.Commit();
+                            return Ok(new TokenResponseModel(requestModel.Phone, _authService.CreateToken(user)));
+                        }
+                        catch (Exception e)
+                        {
+                            _unitOfWork.Rollback();
+                            _logger.Log(LogLevel.Error, e.Message, e, model);
+                            return Problem(e.Message);
+                        }
                     }
                     else
                     {

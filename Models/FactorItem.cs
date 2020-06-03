@@ -1,4 +1,5 @@
 ﻿using Factor.Repositories;
+using System;
 using System.ComponentModel.DataAnnotations;
 
 namespace Factor.Models
@@ -10,5 +11,10 @@ namespace Factor.Models
         public int Quantity { get; set; }
         public long Price { get; set; }
         public long TotalPrice { get; set; }
+
+        public FactorItem()
+        {
+            CreationDate = DateTime.Now;
+        }
     }
 }

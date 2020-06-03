@@ -23,7 +23,7 @@ namespace Factor.Repositories
             modelBuilder.Entity<PreFactor>(p =>
             {
                 p.HasOne(v => v.SubmittedFactor).WithOne(u => u.PreFactor).HasForeignKey<PreFactor>(v => v.SubmittedFactorId);
-            });
+            });            
         }
 
         public DbSet<User> Users { get; set; }

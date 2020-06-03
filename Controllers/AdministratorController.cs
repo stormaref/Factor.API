@@ -128,7 +128,7 @@ namespace Factor.Controllers
         {
             try
             {
-                return Ok(_unitOfWork.FactorRepository.Where(f => !f.IsDone).OrderBy(f => f.UploadTime).ThenBy(f => f.User).AsAsyncEnumerable());
+                return Ok(_unitOfWork.FactorRepository.Where(f => !f.IsDone).OrderBy(f => f.CreationDate).ThenBy(f => f.User).AsAsyncEnumerable());
             }
             catch (Exception e)
             {
@@ -143,7 +143,7 @@ namespace Factor.Controllers
         {
             try
             {
-                return Ok(_unitOfWork.FactorRepository.Where(f => StaticTools.DateChecker(f.UploadTime, model.StartDate, model.EndDate)).OrderBy(f => f.User).ThenBy(f => f.UploadTime).AsAsyncEnumerable());
+                return Ok(_unitOfWork.FactorRepository.Where(f => StaticTools.DateChecker(f.CreationDate, model.StartDate, model.EndDate)).OrderBy(f => f.User).ThenBy(f => f.CreationDate).AsAsyncEnumerable());
             }
             catch (Exception e)
             {
@@ -165,7 +165,7 @@ namespace Factor.Controllers
                     {
                         return NotFound("User not found");
                     }
-                    return Ok(_unitOfWork.FactorRepository.GetDbSet().Where(f => f.User.Phone == phone).OrderBy(f => f.UploadTime).AsAsyncEnumerable());
+                    return Ok(_unitOfWork.FactorRepository.GetDbSet().Where(f => f.User.Phone == phone).OrderBy(f => f.CreationDate).AsAsyncEnumerable());
                 }
                 else
                 {

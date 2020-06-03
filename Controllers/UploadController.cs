@@ -48,7 +48,7 @@ namespace Factor.Controllers
                     }
                     ClaimsIdentity identity = HttpContext.User.Identity as ClaimsIdentity;
                     string id = identity.Claims.ElementAt(0).Value.Split(' ').Last();
-                    PreFactor factor = new PreFactor(DateTime.Now)
+                    PreFactor factor = new PreFactor()
                     {
                         Images = vs,
                         User = await _authService.GetUser(id)

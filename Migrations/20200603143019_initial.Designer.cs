@@ -10,7 +10,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Factor.Migrations
 {
     [DbContext(typeof(DatabaseContext))]
-    [Migration("20200602190007_initial")]
+    [Migration("20200603143019_initial")]
     partial class initial
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -27,7 +27,11 @@ namespace Factor.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<DateTime>("CreationDate")
+                        .HasColumnType("datetime2");
+
                     b.Property<string>("Name")
+                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<Guid>("SubmitedFactorId")
@@ -47,10 +51,13 @@ namespace Factor.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<DateTime>("CreationDate")
+                        .HasColumnType("datetime2");
+
                     b.Property<long>("Price")
                         .HasColumnType("bigint");
 
-                    b.Property<Guid?>("ProductId")
+                    b.Property<Guid>("ProductId")
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<int>("Quantity")
@@ -78,7 +85,11 @@ namespace Factor.Migrations
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<byte[]>("Bytes")
+                        .IsRequired()
                         .HasColumnType("varbinary(max)");
+
+                    b.Property<DateTime>("CreationDate")
+                        .HasColumnType("datetime2");
 
                     b.Property<Guid?>("PreFactorId")
                         .HasColumnType("uniqueidentifier");
@@ -95,6 +106,9 @@ namespace Factor.Migrations
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("CreationDate")
+                        .HasColumnType("datetime2");
 
                     b.Property<string>("Description")
                         .HasColumnType("nvarchar(max)");
@@ -127,7 +141,11 @@ namespace Factor.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<DateTime>("CreationDate")
+                        .HasColumnType("datetime2");
+
                     b.Property<string>("Title")
+                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
@@ -143,6 +161,12 @@ namespace Factor.Migrations
 
                     b.Property<long>("Code")
                         .HasColumnType("bigint");
+
+                    b.Property<DateTime>("CreationDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool>("IsVerified")
+                        .HasColumnType("bit");
 
                     b.Property<string>("Phone")
                         .HasColumnType("nvarchar(max)");
@@ -167,6 +191,9 @@ namespace Factor.Migrations
                     b.Property<string>("Code")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<DateTime>("CreationDate")
+                        .HasColumnType("datetime2");
+
                     b.Property<long>("TotalPrice")
                         .HasColumnType("bigint");
 
@@ -181,6 +208,9 @@ namespace Factor.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<DateTime>("CreationDate")
+                        .HasColumnType("datetime2");
+
                     b.Property<string>("FirstName")
                         .HasColumnType("nvarchar(max)");
 
@@ -188,9 +218,11 @@ namespace Factor.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Phone")
+                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Role")
+                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
@@ -211,7 +243,9 @@ namespace Factor.Migrations
                 {
                     b.HasOne("Factor.Models.Product", "Product")
                         .WithMany()
-                        .HasForeignKey("ProductId");
+                        .HasForeignKey("ProductId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.HasOne("Factor.Models.SubmittedFactor", null)
                         .WithMany("Items")

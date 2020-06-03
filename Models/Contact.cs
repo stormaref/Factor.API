@@ -10,5 +10,11 @@ namespace Factor.Models
         public string Name { get; set; }
         public SubmittedFactor SubmittedFactor { get; set; }
         public Guid SubmitedFactorId { get; set; }
+
+        public Contact(string name)
+        {
+            Name = name;
+            CreationDate = DateTime.Now;
+        }
     }
 }

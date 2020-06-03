@@ -12,7 +12,8 @@ namespace Factor.Migrations
                 columns: table => new
                 {
                     Id = table.Column<Guid>(nullable: false),
-                    Title = table.Column<string>(nullable: true)
+                    CreationDate = table.Column<DateTime>(nullable: false),
+                    Title = table.Column<string>(nullable: false)
                 },
                 constraints: table =>
                 {
@@ -24,6 +25,7 @@ namespace Factor.Migrations
                 columns: table => new
                 {
                     Id = table.Column<Guid>(nullable: false),
+                    CreationDate = table.Column<DateTime>(nullable: false),
                     TotalPrice = table.Column<long>(nullable: false),
                     Code = table.Column<string>(nullable: true)
                 },
@@ -37,10 +39,11 @@ namespace Factor.Migrations
                 columns: table => new
                 {
                     Id = table.Column<Guid>(nullable: false),
-                    Phone = table.Column<string>(nullable: true),
+                    CreationDate = table.Column<DateTime>(nullable: false),
+                    Phone = table.Column<string>(nullable: false),
                     FirstName = table.Column<string>(nullable: true),
                     LastName = table.Column<string>(nullable: true),
-                    Role = table.Column<string>(nullable: true)
+                    Role = table.Column<string>(nullable: false)
                 },
                 constraints: table =>
                 {
@@ -52,7 +55,8 @@ namespace Factor.Migrations
                 columns: table => new
                 {
                     Id = table.Column<Guid>(nullable: false),
-                    Name = table.Column<string>(nullable: true),
+                    CreationDate = table.Column<DateTime>(nullable: false),
+                    Name = table.Column<string>(nullable: false),
                     SubmitedFactorId = table.Column<Guid>(nullable: false)
                 },
                 constraints: table =>
@@ -71,7 +75,8 @@ namespace Factor.Migrations
                 columns: table => new
                 {
                     Id = table.Column<Guid>(nullable: false),
-                    ProductId = table.Column<Guid>(nullable: true),
+                    CreationDate = table.Column<DateTime>(nullable: false),
+                    ProductId = table.Column<Guid>(nullable: false),
                     Quantity = table.Column<int>(nullable: false),
                     Price = table.Column<long>(nullable: false),
                     TotalPrice = table.Column<long>(nullable: false),
@@ -85,7 +90,7 @@ namespace Factor.Migrations
                         column: x => x.ProductId,
                         principalTable: "Product",
                         principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
+                        onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
                         name: "FK_FactorItem_SubmittedFactor_SubmittedFactorId",
                         column: x => x.SubmittedFactorId,
@@ -99,6 +104,7 @@ namespace Factor.Migrations
                 columns: table => new
                 {
                     Id = table.Column<Guid>(nullable: false),
+                    CreationDate = table.Column<DateTime>(nullable: false),
                     UserId = table.Column<Guid>(nullable: true),
                     UploadTime = table.Column<DateTime>(nullable: false),
                     IsDone = table.Column<bool>(nullable: false),
@@ -127,9 +133,11 @@ namespace Factor.Migrations
                 columns: table => new
                 {
                     Id = table.Column<Guid>(nullable: false),
+                    CreationDate = table.Column<DateTime>(nullable: false),
                     Code = table.Column<long>(nullable: false),
                     Phone = table.Column<string>(nullable: true),
-                    UserId = table.Column<Guid>(nullable: false)
+                    UserId = table.Column<Guid>(nullable: false),
+                    IsVerified = table.Column<bool>(nullable: false)
                 },
                 constraints: table =>
                 {
@@ -147,7 +155,8 @@ namespace Factor.Migrations
                 columns: table => new
                 {
                     Id = table.Column<Guid>(nullable: false),
-                    Bytes = table.Column<byte[]>(nullable: true),
+                    CreationDate = table.Column<DateTime>(nullable: false),
+                    Bytes = table.Column<byte[]>(nullable: false),
                     PreFactorId = table.Column<Guid>(nullable: true)
                 },
                 constraints: table =>

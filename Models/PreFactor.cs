@@ -12,14 +12,13 @@ namespace Factor.Models
         [JsonIgnore]
         public virtual User User { get; set; }
         [Required]
-        public DateTime UploadTime { get; set; }
         public bool IsDone { get; set; }
         public string Description { get; set; }
         public SubmittedFactor SubmittedFactor { get; set; }
         public Guid SubmittedFactorId { get; set; }
-        public PreFactor(DateTime uploadTime)
+        public PreFactor()
         {
-            UploadTime = uploadTime;
+            CreationDate = DateTime.Now;
         }
     }
 }
