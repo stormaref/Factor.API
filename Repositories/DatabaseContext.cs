@@ -11,19 +11,23 @@ namespace Factor.Repositories
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            base.OnModelCreating(modelBuilder);
             modelBuilder.Entity<SMSVerification>(e =>
             {
                 e.HasOne(v => v.User).WithOne(u => u.Verification).HasForeignKey<SMSVerification>(v => v.UserId);
             });
-            modelBuilder.Entity<Contact>(c =>
+            modelBuilder.Entity<SubmittedFactor>(c =>
             {
-                c.HasOne(v => v.SubmittedFactor).WithOne(u => u.Contact).HasForeignKey<Contact>(v => v.SubmitedFactorId);
+                c.HasOne(v => v.Contact).WithOne(u => u.SubmittedFactor).HasForeignKey<SubmittedFactor>(v => v.ContactId);
             });
             modelBuilder.Entity<PreFactor>(p =>
             {
                 p.HasOne(v => v.SubmittedFactor).WithOne(u => u.PreFactor).HasForeignKey<PreFactor>(v => v.SubmittedFactorId);
-            });            
+            });
+            modelBuilder.Entity<Product>(p =>
+            {
+                p.HasOne(v => v.FactorItem).WithOne(v => v.Product).HasForeignKey<FactorItem>(v => v.ProductId);
+            });
+            base.OnModelCreating(modelBuilder);
         }
 
         public DbSet<User> Users { get; set; }

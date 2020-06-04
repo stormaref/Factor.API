@@ -4,14 +4,16 @@ using Factor.Repositories;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace Factor.Migrations
 {
     [DbContext(typeof(DatabaseContext))]
-    partial class DatabaseContextModelSnapshot : ModelSnapshot
+    [Migration("20200604083248_minorfk")]
+    partial class minorfk
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -32,10 +34,16 @@ namespace Factor.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<Guid?>("UserId")
+                    b.Property<Guid>("SubmitedFactorId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("UserId")
                         .HasColumnType("uniqueidentifier");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("SubmitedFactorId")
+                        .IsUnique();
 
                     b.HasIndex("UserId");
 
@@ -68,8 +76,7 @@ namespace Factor.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("ProductId")
-                        .IsUnique();
+                    b.HasIndex("ProductId");
 
                     b.HasIndex("SubmittedFactorId");
 
@@ -114,7 +121,7 @@ namespace Factor.Migrations
                     b.Property<bool>("IsDone")
                         .HasColumnType("bit");
 
-                    b.Property<Guid?>("SubmittedFactorId")
+                    b.Property<Guid>("SubmittedFactorId")
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<Guid?>("UserId")
@@ -123,12 +130,11 @@ namespace Factor.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("SubmittedFactorId")
-                        .IsUnique()
-                        .HasFilter("[SubmittedFactorId] IS NOT NULL");
+                        .IsUnique();
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("PreFactor");
+                    b.ToTable("Factors");
                 });
 
             modelBuilder.Entity("Factor.Models.Product", b =>
@@ -205,9 +211,6 @@ namespace Factor.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<Guid?>("ContactId")
-                        .HasColumnType("uniqueidentifier");
-
                     b.Property<DateTime>("CreationDate")
                         .HasColumnType("datetime2");
 
@@ -221,10 +224,6 @@ namespace Factor.Migrations
                         .HasColumnType("bigint");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("ContactId")
-                        .IsUnique()
-                        .HasFilter("[ContactId] IS NOT NULL");
 
                     b.HasIndex("StateId");
 
@@ -261,16 +260,24 @@ namespace Factor.Migrations
 
             modelBuilder.Entity("Factor.Models.Contact", b =>
                 {
+                    b.HasOne("Factor.Models.SubmittedFactor", "SubmittedFactor")
+                        .WithOne("Contact")
+                        .HasForeignKey("Factor.Models.Contact", "SubmitedFactorId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
                     b.HasOne("Factor.Models.User", "User")
                         .WithMany("Contacts")
-                        .HasForeignKey("UserId");
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("Factor.Models.FactorItem", b =>
                 {
                     b.HasOne("Factor.Models.Product", "Product")
-                        .WithOne("FactorItem")
-                        .HasForeignKey("Factor.Models.FactorItem", "ProductId")
+                        .WithMany()
+                        .HasForeignKey("ProductId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
@@ -290,7 +297,9 @@ namespace Factor.Migrations
                 {
                     b.HasOne("Factor.Models.SubmittedFactor", "SubmittedFactor")
                         .WithOne("PreFactor")
-                        .HasForeignKey("Factor.Models.PreFactor", "SubmittedFactorId");
+                        .HasForeignKey("Factor.Models.PreFactor", "SubmittedFactorId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.HasOne("Factor.Models.User", "User")
                         .WithMany("PreFactors")
@@ -308,10 +317,6 @@ namespace Factor.Migrations
 
             modelBuilder.Entity("Factor.Models.SubmittedFactor", b =>
                 {
-                    b.HasOne("Factor.Models.Contact", "Contact")
-                        .WithOne("SubmittedFactor")
-                        .HasForeignKey("Factor.Models.SubmittedFactor", "ContactId");
-
                     b.HasOne("Factor.Models.State", "State")
                         .WithMany()
                         .HasForeignKey("StateId");

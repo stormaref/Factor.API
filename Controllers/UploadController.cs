@@ -5,12 +5,15 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.IO;
 using System.Linq;
 using System.Security.Claims;
+using System.Text;
 using System.Threading.Tasks;
 
 namespace Factor.Controllers
@@ -31,7 +34,7 @@ namespace Factor.Controllers
             _unitOfWork = unitOfWork;
         }
 
-        [Authorize]
+        //[Authorize]
         [HttpPost("[action]")]
         public async Task<IActionResult> UploadFiles([FromForm]ImageFilesRequestModel model)
         {
@@ -51,12 +54,12 @@ namespace Factor.Controllers
                     PreFactor factor = new PreFactor()
                     {
                         Images = vs,
-                        User = await _authService.GetUser(id)
-                        //todo add description if available
+                        User = await _authService.GetUser(id),
+                        Description = model.Description
                     };
                     try
                     {
-                        _unitOfWork.FactorRepository.Insert(factor);
+                        _unitOfWork.PreFactorRepository.Insert(factor);
                         _unitOfWork.Commit();
                         return Ok(factor);
                     }
@@ -90,7 +93,17 @@ namespace Factor.Controllers
             }
             return true;
         }
+
+        [HttpGet("[action]")]
+        public async IAsyncEnumerable<FileContentResult> GetPreFactorImages([FromQuery]string factorId)
+        {
+            var factor = await _unitOfWork.PreFactorRepository.GetDbSet().Include(f => f.Images).SingleOrDefaultAsync(f => f.Id.ToString() == factorId);
+            foreach (var image in factor.Images)
+            {
+                yield return File(image.Bytes, "image/jpeg");
+            }            
+        }
     }
 
-    
+
 }

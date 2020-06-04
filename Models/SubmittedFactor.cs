@@ -1,9 +1,7 @@
 ﻿using Factor.Repositories;
 using System;
 using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using System.Text.Json.Serialization;
 
 namespace Factor.Models
 {
@@ -13,9 +11,8 @@ namespace Factor.Models
         public long TotalPrice { get; set; }
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public string Code { get; set; }
-        [Required]
-        public Contact Contact { get; set; }
-        [JsonIgnore]
+        public virtual Contact Contact { get; set; }
+        public Guid? ContactId { get; set; }
         public PreFactor PreFactor { get; set; }
         public State State { get; set; }
         public DateTime FactorDate { get; set; }

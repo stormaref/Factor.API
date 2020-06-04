@@ -6,9 +6,12 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Query.SqlExpressions;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using System;
+using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -123,12 +126,12 @@ namespace Factor.Controllers
         }
 
         [HttpGet("[action]")]
-        [Authorize(Roles = "Admin")]
+        //[Authorize(Roles = "Admin")]
         public IActionResult GetAllUndoneFactors()
         {
             try
             {
-                return Ok(_unitOfWork.FactorRepository.Where(f => !f.IsDone).OrderBy(f => f.CreationDate).ThenBy(f => f.User).AsAsyncEnumerable());
+                return Ok(_unitOfWork.PreFactorRepository.GetDbSet().Include(f=>f.Images).Where(f => !f.IsDone).OrderBy(f => f.CreationDate).ThenBy(f => f.User).AsAsyncEnumerable());
             }
             catch (Exception e)
             {
@@ -143,7 +146,7 @@ namespace Factor.Controllers
         {
             try
             {
-                return Ok(_unitOfWork.FactorRepository.Where(f => StaticTools.DateChecker(f.CreationDate, model.StartDate, model.EndDate)).OrderBy(f => f.User).ThenBy(f => f.CreationDate).AsAsyncEnumerable());
+                return Ok(_unitOfWork.PreFactorRepository.Where(f => StaticTools.DateChecker(f.CreationDate, model.StartDate, model.EndDate)).OrderBy(f => f.User).ThenBy(f => f.CreationDate).AsAsyncEnumerable());
             }
             catch (Exception e)
             {
@@ -152,6 +155,36 @@ namespace Factor.Controllers
             }
         }
 
+        [HttpGet("[action]")]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> IsUserVerified([FromQuery]string phone)
+        {
+            try
+            {
+                if (StaticTools.PhoneValidator(phone))
+                {
+
+                    var user = await _unitOfWork.UserRepository.GetDbSet().SingleOrDefaultAsync(u => u.Phone == phone);
+                    if (user == null)
+                    {
+                        return NotFound("user not found");
+                    }
+                    else
+                    {
+                        return Ok(user.IsVerified());
+                    }
+                }
+                else
+                {
+                    return BadRequest(StaticTools.PhoneValidationError);
+                }
+            }
+            catch (Exception e)
+            {
+                _logger.LogError(e, e.Message);
+                return Problem(e.Message);
+            }
+        }
 
         [HttpGet("[action]")]
         [Authorize(Roles = "Admin")]
@@ -165,7 +198,7 @@ namespace Factor.Controllers
                     {
                         return NotFound("User not found");
                     }
-                    return Ok(_unitOfWork.FactorRepository.GetDbSet().Where(f => f.User.Phone == phone).OrderBy(f => f.CreationDate).AsAsyncEnumerable());
+                    return Ok(_unitOfWork.PreFactorRepository.GetDbSet().Include(f=>f.Images).Where(f => f.User.Phone == phone).OrderBy(f => f.CreationDate).AsAsyncEnumerable());
                 }
                 else
                 {
@@ -185,7 +218,7 @@ namespace Factor.Controllers
         {
             try
             {
-                PreFactor factor = await _unitOfWork.FactorRepository.GetDbSet().SingleOrDefaultAsync(f => f.Id.ToString() == id);
+                PreFactor factor = await _unitOfWork.PreFactorRepository.GetDbSet().Include(f=>f.Images).SingleOrDefaultAsync(f => f.Id.ToString() == id);
                 if (factor != null)
                 {
                     return Ok(factor);
@@ -209,6 +242,116 @@ namespace Factor.Controllers
             try
             {
                 return Ok(_unitOfWork.UserRepository.GetAll());
+            }
+            catch (Exception e)
+            {
+                _logger.LogError(e, e.Message);
+                return Problem(e.Message);
+            }
+        }
+
+        [HttpGet("[action]")]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> SubmitUserFactor([FromBody] SubmitUserFactorRequestModel model)
+        {
+            try
+            {
+                var user = await _unitOfWork.UserRepository.SingleOrDefaultAsync(u => u.Phone == model.UserPhone);
+                if (user == null)
+                    return NotFound("User not found");
+                var factor = await _unitOfWork.PreFactorRepository.SingleOrDefaultAsync(f => f.Id.ToString() == model.PreFactorId);
+                if (factor == null || factor.User.Id != user.Id)
+                    return NotFound("pre-factor not found");
+                var contact = user.Contacts.SingleOrDefault(c => c.Id.ToString() == model.ContactId);
+                if (contact == null)
+                    return NotFound("user contact not found");
+                long totalPrice = 0;
+                foreach (var item in model.FactorItems)
+                {
+                    item.TotalPrice = item.Quantity * item.Price;
+                    totalPrice += item.TotalPrice;
+                }
+                var sf = new SubmittedFactor
+                {
+                    Contact = contact,
+                    FactorDate = model.FactorDate,
+                    TotalPrice = totalPrice,
+                    Items = model.FactorItems,
+                    PreFactor = factor,
+                    State = model.State
+                };
+                try
+                {
+                    _unitOfWork.SubmittedFactorRepository.Insert(sf);
+                    _unitOfWork.Commit();
+                    //var x = new { Id = sf.Id, Items = sf.Items, PreFactor = sf.PreFactor, State = sf.State, TotalPrice = sf.TotalPrice };
+                    return Ok(sf);
+                }
+                catch (Exception e)
+                {
+                    _unitOfWork.Rollback();
+                    _logger.LogError(e, e.Message);
+                    return Problem("database error");
+                }
+            }
+            catch (Exception e)
+            {
+                _logger.LogError(e, e.Message);
+                return Problem(e.Message);
+            }
+        }
+
+        [HttpPost("[action]")]
+        public async Task<IActionResult> AddContactToUser([FromBody]AddContactToUserRequestModel model)
+        {
+            try
+            {
+                var user = await _unitOfWork.UserRepository.SingleOrDefaultAsync(u => u.Phone == model.UserPhone);
+                if (user == null)
+                    return NotFound("User not found");
+                if (_unitOfWork.ContactRepository.GetDbSet().Any(c => c.Name == model.ContactName))
+                    return BadRequest("this name is available");
+                var contact = new Contact(model.ContactName)
+                {
+                    User = user
+                };
+                try
+                {
+                    _unitOfWork.ContactRepository.Insert(contact);
+                    _unitOfWork.Commit();
+                    var x = new { Id = contact.Id, contact.Name };
+                    return Ok(x);
+                }
+                catch (Exception e)
+                {
+                    _unitOfWork.Rollback();
+                    _logger.LogError(e, e.Message);
+                    return Problem("database error");
+                }
+            }
+            catch (Exception e)
+            {
+                _logger.LogError(e, e.Message);
+                return Problem(e.Message);
+            }
+        }
+
+        [HttpGet("[action]")]
+        public async Task<IActionResult> GetUserContacts(string phone)
+        {
+            try
+            {
+                var included = _unitOfWork.UserRepository.GetDbSet().Include(u => u.Contacts);
+                var user = await included.SingleOrDefaultAsync(u => u.Phone == phone);
+                var contacts = user.Contacts.ToList();
+                var x = from contact in contacts
+                        select new
+                        {
+                            Id = contact.Id,
+                            Name = contact.Name,
+                            UserId = contact.User.Id
+                        };
+                return Ok(x);
             }
             catch (Exception e)
             {

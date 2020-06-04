@@ -1,4 +1,5 @@
 ﻿using Factor.Repositories;
+using Newtonsoft.Json;
 using System;
 using System.ComponentModel.DataAnnotations;
 
@@ -8,9 +9,10 @@ namespace Factor.Models
     {
         [Required]
         public string Name { get; set; }
-        public SubmittedFactor SubmittedFactor { get; set; }
-        public Guid SubmitedFactorId { get; set; }
-
+        [JsonIgnore]
+        public virtual SubmittedFactor SubmittedFactor { get; set; }        
+        [JsonIgnore]
+        public User User { get; set; }
         public Contact(string name)
         {
             Name = name;

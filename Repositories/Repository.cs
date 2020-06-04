@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Threading.Tasks;
 
 namespace Factor.Repositories
 {
@@ -59,9 +60,13 @@ namespace Factor.Repositories
 
             _context.SaveChanges();
         }
-        public IQueryable<T> Where(Expression<Func<T, bool>> expression)
+        public IQueryable<T> Where(Expression<Func<T, bool>> predicate)
         {
-            return _entities.Where(expression);
+            return _entities.Where(predicate);
+        }
+        public Task<T> SingleOrDefaultAsync(Expression<Func<T, bool>> predicate)
+        {
+            return _context.Set<T>().SingleOrDefaultAsync(predicate);
         }
         public DbSet<T> GetDbSet()
         {

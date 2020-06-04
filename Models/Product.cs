@@ -11,6 +11,7 @@ namespace Factor.Models
     {
         [Required]
         public string Title { get; set; }
+        public FactorItem FactorItem { get; set; }
 
         public Product(string title)
         {

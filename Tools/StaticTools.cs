@@ -26,11 +26,7 @@ namespace Factor.Tools
         {
             return (date >= startDate && date <= endDate);
         }
-
-        public static List<Contact> Contacts(this User user)
-        {
-            return user.PreFactors.Select(f => f.SubmittedFactor).Select(f=>f.Contact).Distinct().ToList();
-        }
+        
         public static bool IsVerified(this User user)
         {
             return user.Verification.IsVerified;

@@ -15,10 +15,11 @@ namespace Factor.Models
         public SMSVerification Verification { get; set; }
         [Required]
         public string Role { get; set; }
+        public ICollection<Contact> Contacts { get; set; }
         public User(string phone)
         {
             Phone = phone;
             CreationDate = DateTime.Now;
-        }       
+        }
     }
 }
