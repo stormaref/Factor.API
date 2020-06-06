@@ -359,5 +359,54 @@ namespace Factor.Controllers
                 return Problem(e.Message);
             }
         }
+
+        [HttpGet("[action]")]
+        public async Task<IActionResult> GetProducts([FromQuery]string search)
+        {
+            try
+            {
+                if (string.IsNullOrWhiteSpace(search) || string.IsNullOrEmpty(search))
+                {
+                    return Ok(_unitOfWork.ProductRepository.GetAll());
+                }
+                else
+                {
+                    return Ok(await _unitOfWork.ProductRepository.Where(p => p.Title.Contains(search)).ToListAsync());
+                }
+            }
+            catch (Exception e)
+            {
+                _logger.LogError(e, e.Message);
+                return Problem(e.Message);
+            }
+        }
+
+        [HttpDelete("[action]")]
+        public async Task<IActionResult> RemoveProduct([FromQuery]string productId)
+        {
+            try
+            {
+                var product = await _unitOfWork.ProductRepository.SingleOrDefaultAsync(p => p.Id.ToString() == productId);
+                if (product == null)
+                    return NotFound("Product not found");
+                try
+                {
+                    _unitOfWork.ProductRepository.Delete(Guid.Parse(productId));
+                    _unitOfWork.Commit();
+                    return Ok("Product removed succesfully");
+                }
+                catch (Exception e)
+                {
+                    _unitOfWork.Rollback();
+                    _logger.LogError(e, e.Message);
+                    return Problem("database error");
+                }
+            }
+            catch (Exception e)
+            {
+                _logger.LogError(e, e.Message);
+                return Problem(e.Message);
+            }
+        }
     }
 }

@@ -10,6 +10,7 @@ namespace Factor.IServices
         IRepository<PreFactor> PreFactorRepository { get; }
         IRepository<SubmittedFactor> SubmittedFactorRepository { get; }
         IRepository<Contact> ContactRepository { get; }
+        IRepository<Product> ProductRepository { get; }
         void Commit();
         void Rollback();
     }

@@ -28,6 +28,9 @@ namespace Factor.Services
         private IRepository<Contact> _contactFactorRepository;
         public IRepository<Contact> ContactRepository => _contactFactorRepository ??= new Repository<Contact>(_databasecontext);
 
+        private IRepository<Product> _productRepository;
+        public IRepository<Product> ProductRepository => _productRepository ??= new Repository<Product>(_databasecontext);
+
         public void Commit()
         {
             _databasecontext.SaveChanges();
