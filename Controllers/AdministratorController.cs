@@ -381,6 +381,36 @@ namespace Factor.Controllers
             }
         }
 
+        [HttpPost("[action]")]
+        public async Task<IActionResult> AddProduct([FromQuery]string title)
+        {
+            try
+            {
+                if (string.IsNullOrWhiteSpace(title) || string.IsNullOrEmpty(title))
+                    return BadRequest("Product tite is invalid");
+                var test = await _unitOfWork.ProductRepository.SingleOrDefaultAsync(p => p.Title == title || p.Title == title.Trim());
+                if (test!=null)
+                    return BadRequest("There is a product with this title");
+                try
+                {
+                    _unitOfWork.ProductRepository.Insert(new Product(title));
+                    _unitOfWork.Commit();
+                    return Ok("Product added succesfully");
+                }
+                catch (Exception e)
+                {
+                    _unitOfWork.Rollback();
+                    _logger.LogError(e, e.Message);
+                    return Problem("database error");
+                }
+            }
+            catch (Exception e)
+            {
+                _logger.LogError(e, e.Message);
+                return Problem(e.Message);
+            }
+        }
+
         [HttpDelete("[action]")]
         public async Task<IActionResult> RemoveProduct([FromQuery]string productId)
         {
