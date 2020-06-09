@@ -16,7 +16,7 @@ namespace Factor.Services
         private readonly ILogger<MessageService> _logger;
         private readonly IConfiguration _configuration;
         private readonly SMSTokenRequestModel SMSToken;
-        private string AppHash;
+        private readonly string AppHash;
 
         public MessageService(ILogger<MessageService> logger, IConfiguration configuration)
         {
@@ -38,8 +38,8 @@ namespace Factor.Services
                 {
                     string token = @object.Value<string>("TokenKey");
                     client.DefaultRequestHeaders.Add("x-sms-ir-secure-token", token);
-                    var message = string.Format("<#> {0}{1}{2}{3}{4}", _configuration.GetValue<string>("MessageText"), Environment.NewLine, code, Environment.NewLine, AppHash);
-                    var model = new SMSVerificationRequestModel(message, receptor, _configuration.GetValue<string>("LineNumber"));
+                    string message = string.Format("<#> {0}{1}{2}{3}{4}", _configuration.GetValue<string>("MessageText"), Environment.NewLine, code, Environment.NewLine, AppHash);
+                    SMSVerificationRequestModel model = new SMSVerificationRequestModel(message, receptor, _configuration.GetValue<string>("LineNumber"));
                     StringContent messageData = new StringContent(JsonSerializer.Serialize(model), Encoding.UTF8, "application/json");
                     HttpResponseMessage messageResponse = await client.PostAsync("http://RestfulSms.com/api/MessageSend", messageData);
                     JObject messageJObject = JObject.Parse(await messageResponse.Content.ReadAsStringAsync());
@@ -49,14 +49,14 @@ namespace Factor.Services
                     }
                     else
                     {
-                        var ex = new Exception("Phone is incorrent or sms service error");
+                        Exception ex = new Exception("Phone is incorrent or sms service error");
                         _logger.Log(LogLevel.Warning, ex, ex.Message, @object);
                         throw ex;
                     }
                 }
                 else
                 {
-                    var ex = new Exception("Security codes are incorrect contact back-end");
+                    Exception ex = new Exception("Security codes are incorrect contact back-end");
                     _logger.Log(LogLevel.Warning, ex, ex.Message, @object);
                     throw ex;
                 }

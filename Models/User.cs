@@ -1,4 +1,5 @@
 ﻿using Factor.Repositories;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
@@ -11,6 +12,7 @@ namespace Factor.Models
         public string Phone { get; set; }
         public string FirstName { get; set; }
         public string LastName { get; set; }
+        [JsonIgnore]
         public ICollection<PreFactor> PreFactors { get; set; }
         public SMSVerification Verification { get; set; }
         [Required]

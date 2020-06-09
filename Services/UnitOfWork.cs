@@ -21,7 +21,7 @@ namespace Factor.Services
 
         private IRepository<PreFactor> _preFactorRepository;
         public IRepository<PreFactor> PreFactorRepository => _preFactorRepository ??= new Repository<PreFactor>(_databasecontext);
-        
+
         private IRepository<SubmittedFactor> _submittedFactorRepository;
         public IRepository<SubmittedFactor> SubmittedFactorRepository => _submittedFactorRepository ??= new Repository<SubmittedFactor>(_databasecontext);
 

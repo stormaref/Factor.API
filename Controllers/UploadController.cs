@@ -9,11 +9,8 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
-using System.IO;
 using System.Linq;
 using System.Security.Claims;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace Factor.Controllers
@@ -98,11 +95,11 @@ namespace Factor.Controllers
         [Authorize]
         public async IAsyncEnumerable<FileContentResult> GetPreFactorImages([FromQuery]string factorId)
         {
-            var factor = await _unitOfWork.PreFactorRepository.GetDbSet().Include(f => f.Images).SingleOrDefaultAsync(f => f.Id.ToString() == factorId);
-            foreach (var image in factor.Images)
+            PreFactor factor = await _unitOfWork.PreFactorRepository.GetDbSet().Include(f => f.Images).SingleOrDefaultAsync(f => f.Id.ToString() == factorId);
+            foreach (Image image in factor.Images)
             {
                 yield return File(image.Bytes, "image/jpeg");
-            }            
+            }
         }
 
         [HttpPut("[action]")]

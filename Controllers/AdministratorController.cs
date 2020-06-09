@@ -6,12 +6,10 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Query.SqlExpressions;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -164,7 +162,7 @@ namespace Factor.Controllers
                 if (StaticTools.PhoneValidator(phone))
                 {
 
-                    var user = await _unitOfWork.UserRepository.GetDbSet().SingleOrDefaultAsync(u => u.Phone == phone);
+                    User user = await _unitOfWork.UserRepository.GetDbSet().SingleOrDefaultAsync(u => u.Phone == phone);
                     if (user == null)
                     {
                         return NotFound("user not found");
@@ -198,7 +196,18 @@ namespace Factor.Controllers
                     {
                         return NotFound("User not found");
                     }
-                    return Ok(_unitOfWork.PreFactorRepository.GetDbSet().Include(f => f.Images).Where(f => f.User.Phone == phone).OrderBy(f => f.CreationDate).AsAsyncEnumerable());
+
+                    IEnumerable<PreFactor> result = _unitOfWork.PreFactorRepository.GetDbSet().Include(f => f.Images).Include(f => f.User).Where(f => f.User.Phone == phone).OrderBy(f => f.CreationDate).AsEnumerable();
+                    var x = from item in result
+                            select new
+                            {
+                                item.Id,
+                                UserId = item.User.Id,
+                                item.Images,
+                                item.IsDone,
+                                item.SubmittedFactorId
+                            };
+                    return Ok();
                 }
                 else
                 {
@@ -256,23 +265,35 @@ namespace Factor.Controllers
         {
             try
             {
-                var user = await _unitOfWork.UserRepository.GetDbSet().Include(u => u.Contacts).SingleOrDefaultAsync(u => u.Phone == model.UserPhone);
+                User user = await _unitOfWork.UserRepository.GetDbSet().Include(u => u.Contacts).SingleOrDefaultAsync(u => u.Phone == model.UserPhone);
                 if (user == null)
-                    return NotFound("User not found");
-                var preFactor = await _unitOfWork.PreFactorRepository.GetDbSet().Include(f => f.User).SingleOrDefaultAsync(f => f.Id.ToString() == model.PreFactorId);
-                if (preFactor == null || preFactor.User.Id != user.Id)
-                    return NotFound("pre-factor not found");
-                var contact = user.Contacts.SingleOrDefault(c => c.Id.ToString() == model.ContactId);
-                if (contact == null)
-                    return NotFound("user contact not found");
-                long totalPrice = 0;
-                var factors = new List<FactorItem>();
-                foreach (var item in model.FactorItems)
                 {
-                    var product = await _unitOfWork.ProductRepository.SingleOrDefaultAsync(p => p.Title == item.Product.Title);
+                    return NotFound("User not found");
+                }
+
+                PreFactor preFactor = await _unitOfWork.PreFactorRepository.GetDbSet().Include(f => f.User).SingleOrDefaultAsync(f => f.Id.ToString() == model.PreFactorId);
+                if (preFactor == null || preFactor.User.Id != user.Id)
+                {
+                    return NotFound("pre-factor not found");
+                }
+
+                Contact contact = user.Contacts.SingleOrDefault(c => c.Id.ToString() == model.ContactId);
+                if (contact == null)
+                {
+                    return NotFound("user contact not found");
+                }
+
+                long totalPrice = 0;
+                List<FactorItem> factors = new List<FactorItem>();
+                foreach (FactorItemRequestModel item in model.FactorItems)
+                {
+                    Product product = await _unitOfWork.ProductRepository.SingleOrDefaultAsync(p => p.Title == item.Product.Title);
                     if (product == null)
+                    {
                         return NotFound(item.Product.Title + " not found");
-                    var factorItem = new FactorItem()
+                    }
+
+                    FactorItem factorItem = new FactorItem()
                     {
                         Price = item.Price,
                         Product = product,
@@ -281,7 +302,7 @@ namespace Factor.Controllers
                     factors.Add(factorItem);
                     totalPrice += factorItem.TotalPrice;
                 }
-                var sf = new SubmittedFactor
+                SubmittedFactor sf = new SubmittedFactor
                 {
                     Contact = contact,
                     FactorDate = model.FactorDate,
@@ -317,12 +338,18 @@ namespace Factor.Controllers
         {
             try
             {
-                var user = await _unitOfWork.UserRepository.SingleOrDefaultAsync(u => u.Phone == model.UserPhone);
+                User user = await _unitOfWork.UserRepository.SingleOrDefaultAsync(u => u.Phone == model.UserPhone);
                 if (user == null)
+                {
                     return NotFound("User not found");
+                }
+
                 if (_unitOfWork.ContactRepository.GetDbSet().Any(c => c.Name == model.ContactName))
+                {
                     return BadRequest("this name is available");
-                var contact = new Contact(model.ContactName)
+                }
+
+                Contact contact = new Contact(model.ContactName)
                 {
                     User = user
                 };
@@ -353,9 +380,9 @@ namespace Factor.Controllers
         {
             try
             {
-                var included = _unitOfWork.UserRepository.GetDbSet().Include(u => u.Contacts);
-                var user = await included.SingleOrDefaultAsync(u => u.Phone == phone);
-                var contacts = user.Contacts.ToList();
+                Microsoft.EntityFrameworkCore.Query.IIncludableQueryable<User, ICollection<Contact>> included = _unitOfWork.UserRepository.GetDbSet().Include(u => u.Contacts);
+                User user = await included.SingleOrDefaultAsync(u => u.Phone == phone);
+                List<Contact> contacts = user.Contacts.ToList();
                 var x = from contact in contacts
                         select new
                         {
@@ -401,10 +428,16 @@ namespace Factor.Controllers
             try
             {
                 if (string.IsNullOrWhiteSpace(title) || string.IsNullOrEmpty(title))
+                {
                     return BadRequest("Product tite is invalid");
-                var test = await _unitOfWork.ProductRepository.SingleOrDefaultAsync(p => p.Title == title || p.Title == title.Trim());
+                }
+
+                Product test = await _unitOfWork.ProductRepository.SingleOrDefaultAsync(p => p.Title == title || p.Title == title.Trim());
                 if (test != null)
+                {
                     return BadRequest("There is a product with this title");
+                }
+
                 try
                 {
                     _unitOfWork.ProductRepository.Insert(new Product(title));
@@ -432,9 +465,12 @@ namespace Factor.Controllers
         {
             try
             {
-                var product = await _unitOfWork.ProductRepository.SingleOrDefaultAsync(p => p.Id.ToString() == productId);
+                Product product = await _unitOfWork.ProductRepository.SingleOrDefaultAsync(p => p.Id.ToString() == productId);
                 if (product == null)
+                {
                     return NotFound("Product not found");
+                }
+
                 try
                 {
                     _unitOfWork.ProductRepository.Delete(Guid.Parse(productId));
@@ -460,9 +496,12 @@ namespace Factor.Controllers
         {
             try
             {
-                var sf = await _unitOfWork.SubmittedFactorRepository.GetDbSet().Include(s=>s.Items).SingleOrDefaultAsync(s=>s.Id == Guid.Parse(submittedFactorId));
+                SubmittedFactor sf = await _unitOfWork.SubmittedFactorRepository.GetDbSet().Include(s => s.Items).SingleOrDefaultAsync(s => s.Id == Guid.Parse(submittedFactorId));
                 if (sf == null)
+                {
                     return NotFound("Factor not found");
+                }
+
                 return Ok(sf.Items);
             }
             catch (Exception e)

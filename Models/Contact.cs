@@ -10,7 +10,7 @@ namespace Factor.Models
         [Required]
         public string Name { get; set; }
         [JsonIgnore]
-        public virtual SubmittedFactor SubmittedFactor { get; set; }        
+        public virtual SubmittedFactor SubmittedFactor { get; set; }
         [JsonIgnore]
         public User User { get; set; }
         public Contact(string name)

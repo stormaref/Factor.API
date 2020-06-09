@@ -1,6 +1,5 @@
 ﻿using Factor.Repositories;
 using System;
-using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Factor.Models
 {

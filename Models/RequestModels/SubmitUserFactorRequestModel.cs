@@ -2,8 +2,6 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace Factor.Models.RequestModels
 {
@@ -11,7 +9,7 @@ namespace Factor.Models.RequestModels
     public class SubmitUserFactorRequestModel
     {
         [Required]
-        [RegularExpression(StaticTools.PhoneRegex,ErrorMessage = StaticTools.PhoneValidationError)]
+        [RegularExpression(StaticTools.PhoneRegex, ErrorMessage = StaticTools.PhoneValidationError)]
         public string UserPhone { get; set; }
         [Required]
         public List<FactorItemRequestModel> FactorItems { get; set; }
