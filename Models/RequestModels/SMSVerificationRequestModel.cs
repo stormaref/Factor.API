@@ -1,19 +1,24 @@
 ﻿using Newtonsoft.Json;
+using System.Collections.Generic;
 
 namespace Factor.Models.RequestModels
 {
     public class SMSVerificationRequestModel
     {
-        [JsonProperty("Code")]
-        public long Code { get; set; }
+        [JsonProperty("MobileNumbers")]
+        public List<string> MobileNumbers { get; set; }
 
-        [JsonProperty("MobileNumber")]
-        public string MobileNumber { get; set; }
+        [JsonProperty("Messages")]
+        public List<string> Messages { get; set; }
 
-        public SMSVerificationRequestModel(long code, string mobileNumber)
+        [JsonProperty("LineNumber")]
+        public string LineNumber { get; set; }
+
+        public SMSVerificationRequestModel(string message, string mobileNumber,string lineNumber)
         {
-            Code = code;
-            MobileNumber = mobileNumber;
+            Messages = new List<string> { message };
+            MobileNumbers = new List<string> { mobileNumber };
+            LineNumber = lineNumber;
         }
     }
 }

@@ -23,10 +23,6 @@ namespace Factor.Repositories
             {
                 p.HasOne(v => v.SubmittedFactor).WithOne(u => u.PreFactor).HasForeignKey<PreFactor>(v => v.SubmittedFactorId);
             });
-            modelBuilder.Entity<Product>(p =>
-            {
-                p.HasOne(v => v.FactorItem).WithOne(v => v.Product).HasForeignKey<FactorItem>(v => v.ProductId);
-            });
             base.OnModelCreating(modelBuilder);
         }
 

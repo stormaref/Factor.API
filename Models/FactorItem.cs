@@ -1,6 +1,7 @@
 ﻿using Factor.Repositories;
 using System;
 using System.ComponentModel.DataAnnotations;
+using System.Text.Json.Serialization;
 
 namespace Factor.Models
 {
@@ -14,6 +15,9 @@ namespace Factor.Models
         [Required]
         public long Price { get; set; }
         public long TotalPrice { get; set; }
+        public Guid? SubmittedFactorId { get; set; }
+        [JsonIgnore]
+        public virtual SubmittedFactor SubmittedFactor { get; set; }
 
         public FactorItem()
         {

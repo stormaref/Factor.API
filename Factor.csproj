@@ -13,6 +13,10 @@
     <Compile Remove="Migrations\20200604091706_fkChangesss.Designer.cs" />
     <Compile Remove="Migrations\20200604092538_wtf.cs" />
     <Compile Remove="Migrations\20200604092538_wtf.Designer.cs" />
+    <Compile Remove="Migrations\20200609101244_userprefactor.cs" />
+    <Compile Remove="Migrations\20200609101244_userprefactor.Designer.cs" />
+    <Compile Remove="Migrations\20200609103215_submitted.cs" />
+    <Compile Remove="Migrations\20200609103215_submitted.Designer.cs" />
   </ItemGroup>
 
   <ItemGroup>

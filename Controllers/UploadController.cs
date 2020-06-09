@@ -95,6 +95,7 @@ namespace Factor.Controllers
         }
 
         [HttpGet("[action]")]
+        [Authorize]
         public async IAsyncEnumerable<FileContentResult> GetPreFactorImages([FromQuery]string factorId)
         {
             var factor = await _unitOfWork.PreFactorRepository.GetDbSet().Include(f => f.Images).SingleOrDefaultAsync(f => f.Id.ToString() == factorId);
@@ -102,6 +103,21 @@ namespace Factor.Controllers
             {
                 yield return File(image.Bytes, "image/jpeg");
             }            
+        }
+
+        [HttpPut("[action]")]
+        [Authorize]
+        public async Task<IActionResult> AddImageToFactor([FromBody]AddImageToFactorRequestModel model)
+        {
+            try
+            {
+                throw new NotImplementedException();
+            }
+            catch (Exception e)
+            {
+                _logger.LogError(e, e.Message);
+                return Problem(e.Message);
+            }
         }
     }
 

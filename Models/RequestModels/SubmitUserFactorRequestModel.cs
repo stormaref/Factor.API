@@ -14,11 +14,11 @@ namespace Factor.Models.RequestModels
         [RegularExpression(StaticTools.PhoneRegex,ErrorMessage = StaticTools.PhoneValidationError)]
         public string UserPhone { get; set; }
         [Required]
-        public List<FactorItem> FactorItems { get; set; }
+        public List<FactorItemRequestModel> FactorItems { get; set; }
         [Required]
         public string PreFactorId { get; set; }
         [Required]
-        public State State { get; set; }
+        public StateRequestModel State { get; set; }
         [Required]
         public string ContactId { get; set; }
         [Required]

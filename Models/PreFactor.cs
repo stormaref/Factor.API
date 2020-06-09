@@ -12,7 +12,8 @@ namespace Factor.Models
     {
         public List<Image> Images { get; set; }
         [JsonIgnore]
-        public User User { get; set; }
+        public virtual User User { get; set; }
+        public Guid UserId { get; set; }
         [Required]
         public bool IsDone { get; set; }
         public string Description { get; set; }
