@@ -31,13 +31,13 @@ namespace Factor.Controllers
             _unitOfWork = unitOfWork;
         }
 
-        //[Authorize]
         [HttpPost("[action]")]
-        public async Task<IActionResult> UploadFiles([FromForm]ImageFilesRequestModel model)
+        [Authorize]
+        public async Task<IActionResult> UploadFiles([FromForm] ImageFilesRequestModel model)
         {
             try
             {
-                if (CheckFiles(model))
+                if (CheckFiles(model.Files))
                 {
                     List<Image> vs = new List<Image>();
                     foreach (IFormFile file in model.Files)
@@ -69,7 +69,7 @@ namespace Factor.Controllers
                 }
                 else
                 {
-                    return BadRequest("All images must be jpeg");
+                    return BadRequest("All images must be JPEG");
                 }
             }
             catch (Exception e)
@@ -79,9 +79,9 @@ namespace Factor.Controllers
             }
         }
 
-        private bool CheckFiles(ImageFilesRequestModel model)
+        private bool CheckFiles(List<IFormFile> files)
         {
-            foreach (IFormFile file in model.Files)
+            foreach (IFormFile file in files)
             {
                 if (file == null || file.ContentType != "image/jpeg")
                 {
@@ -93,7 +93,7 @@ namespace Factor.Controllers
 
         [HttpGet("[action]")]
         [Authorize]
-        public async IAsyncEnumerable<FileContentResult> GetPreFactorImages([FromQuery]string factorId)
+        public async IAsyncEnumerable<FileContentResult> GetPreFactorImages([FromQuery] string factorId)
         {
             PreFactor factor = await _unitOfWork.PreFactorRepository.GetDbSet().Include(f => f.Images).SingleOrDefaultAsync(f => f.Id.ToString() == factorId);
             foreach (Image image in factor.Images)
@@ -104,11 +104,43 @@ namespace Factor.Controllers
 
         [HttpPut("[action]")]
         [Authorize]
-        public async Task<IActionResult> AddImageToFactor([FromBody]AddImageToFactorRequestModel model)
+        public async Task<IActionResult> AddImagesToFactor([FromBody] AddImageToFactorRequestModel model)
         {
             try
             {
-                throw new NotImplementedException();
+                PreFactor factor = await _unitOfWork.PreFactorRepository.GetDbSet().Include(f => f.Images).SingleOrDefaultAsync(f => f.Id == Guid.Parse(model.FactorId));
+                if (factor == null)
+                {
+                    return NotFound("factor not found");
+                }
+
+                if (CheckFiles(model.Images))
+                {
+                    List<Image> vs = new List<Image>();
+                    foreach (IFormFile file in model.Images)
+                    {
+                        byte[] bytes = new byte[file.Length];
+                        file.OpenReadStream().Read(bytes, 0, bytes.Length);
+                        vs.Add(new Image(bytes));
+                    }
+                    factor.Images.AddRange(vs);
+                    try
+                    {
+                        _unitOfWork.PreFactorRepository.Update(factor);
+                        _unitOfWork.Commit();
+                        return Ok(factor.Images);
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.Log(LogLevel.Error, ex, "transaction rollback", factor);
+                        _unitOfWork.Rollback();
+                        return Problem("database rollback");
+                    }
+                }
+                else
+                {
+                    return BadRequest("All images must be JPEG");
+                }
             }
             catch (Exception e)
             {

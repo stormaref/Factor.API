@@ -37,7 +37,7 @@ namespace Factor.Controllers
         }
 
         [HttpPost("[action]")]
-        public async Task<IActionResult> Login([FromQuery]string phone)
+        public async Task<IActionResult> Login([FromQuery] string phone)
         {
             try
             {
@@ -121,7 +121,7 @@ namespace Factor.Controllers
         }
 
         [HttpPost("[action]")]
-        public async Task<IActionResult> ResendCode([FromQuery]string phone)
+        public async Task<IActionResult> ResendCode([FromQuery] string phone)
         {
             try
             {

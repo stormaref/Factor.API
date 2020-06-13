@@ -9,6 +9,12 @@ namespace Factor.Models
         [Required]
         public byte[] Bytes { get; set; }
 
+        public Image(byte[] bytes)
+        {
+            CreationDate = DateTime.Now;
+            Bytes = bytes;
+        }
+
         public Image()
         {
             CreationDate = DateTime.Now;

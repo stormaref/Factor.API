@@ -1,5 +1,4 @@
-﻿using Factor.Tools;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 
@@ -8,9 +7,6 @@ namespace Factor.Models.RequestModels
 
     public class SubmitUserFactorRequestModel
     {
-        [Required]
-        [RegularExpression(StaticTools.PhoneRegex, ErrorMessage = StaticTools.PhoneValidationError)]
-        public string UserPhone { get; set; }
         [Required]
         public List<FactorItemRequestModel> FactorItems { get; set; }
         [Required]
