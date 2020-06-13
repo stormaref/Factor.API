@@ -207,7 +207,7 @@ namespace Factor.Controllers
                                 item.IsDone,
                                 item.SubmittedFactorId
                             };
-                    return Ok();
+                    return Ok(x);
                 }
                 else
                 {
