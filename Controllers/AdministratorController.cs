@@ -125,11 +125,29 @@ namespace Factor.Controllers
 
         [HttpGet("[action]")]
         [Authorize(Roles = "Admin")]
-        public IActionResult GetAllUndoneFactors()
+        public async Task<IActionResult> GetAllUndoneFactorsGroupedByUser()
         {
             try
             {
-                return Ok(_unitOfWork.PreFactorRepository.GetDbSet().Include(f => f.Images).Where(f => !f.IsDone).OrderBy(f => f.CreationDate).ThenBy(f => f.User).AsAsyncEnumerable());
+                var factors = await _unitOfWork.PreFactorRepository.GetDbSet().Include(f => f.Images).Include(f => f.User).Where(f => !f.IsDone).OrderBy(f => f.CreationDate).ToListAsync();
+                var query = factors.GroupBy(f => f.User, (u, pf) => new { UserId = u.Id, PreFactor = pf });
+                return Ok(query);
+            }
+            catch (Exception e)
+            {
+                _logger.LogError(e, e.Message);
+                return Problem(e.Message);
+            }
+        }
+
+        [HttpGet("[action]")]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> GetAllUndoneFactors()
+        {
+            try
+            {
+                var factors = await _unitOfWork.PreFactorRepository.GetDbSet().Include(f => f.Images).Where(f => !f.IsDone).OrderBy(f => f.CreationDate).ToListAsync();
+                return Ok(factors);
             }
             catch (Exception e)
             {
@@ -186,7 +204,7 @@ namespace Factor.Controllers
 
         [HttpGet("[action]")]
         [Authorize(Roles = "Admin")]
-        public IActionResult GetUserFactors([FromQuery] string phone)
+        public IActionResult GetUserUndoneFactors([FromQuery] string phone)
         {
             try
             {
@@ -197,7 +215,7 @@ namespace Factor.Controllers
                         return NotFound("User not found");
                     }
 
-                    IEnumerable<PreFactor> result = _unitOfWork.PreFactorRepository.GetDbSet().Include(f => f.Images).Include(f => f.User).Where(f => f.User.Phone == phone).OrderBy(f => f.CreationDate).AsEnumerable();
+                    IEnumerable<PreFactor> result = _unitOfWork.PreFactorRepository.GetDbSet().Include(f => f.Images).Include(f => f.User).Where(f => f.User.Phone == phone && !f.IsDone).OrderBy(f => f.CreationDate).AsEnumerable();
                     var x = from item in result
                             select new
                             {
@@ -223,11 +241,27 @@ namespace Factor.Controllers
 
         [HttpGet("[action]")]
         [Authorize(Roles = "Admin")]
+        public IActionResult GetAllUsers()
+        {
+            try
+            {
+                var users = _unitOfWork.UserRepository.Where(u => u.Role == "User").OrderBy(u => u.CreationDate);
+                return Ok(users);
+            }
+            catch (Exception e)
+            {
+                _logger.LogError(e, e.Message);
+                return Problem(e.Message);
+            }
+        }
+
+        [HttpGet("[action]")]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> GetFactor([FromQuery] string id)
         {
             try
             {
-                PreFactor factor = await _unitOfWork.PreFactorRepository.GetDbSet().Include(f => f.Images).Include(f => f.User).SingleOrDefaultAsync(f => f.Id.ToString() == id);
+                PreFactor factor = await _unitOfWork.PreFactorRepository.GetDbSet().Include(f => f.Images).Include(f => f.User).SingleOrDefaultAsync(f => f.Id == Guid.Parse(id));
                 if (factor != null)
                 {
                     var x = new
@@ -252,49 +286,27 @@ namespace Factor.Controllers
             }
         }
 
-        [HttpGet("[action]")]
-        [Authorize(Roles = "Admin")]
-        public IActionResult GetAllUsers()
-        {
-            try
-            {
-                return Ok(_unitOfWork.UserRepository.GetAll());
-            }
-            catch (Exception e)
-            {
-                _logger.LogError(e, e.Message);
-                return Problem(e.Message);
-            }
-        }
-
         [HttpPost("[action]")]
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> SubmitUserFactor([FromBody] SubmitUserFactorRequestModel model)
         {
             try
             {
-                PreFactor preFactor = await _unitOfWork.PreFactorRepository.GetDbSet().Include(f => f.User).ThenInclude(u => u.Contacts).SingleOrDefaultAsync(f => f.Id.ToString() == model.PreFactorId);
+                PreFactor preFactor = await _unitOfWork.PreFactorRepository.GetDbSet().Include(f => f.User).ThenInclude(u => u.Contacts).SingleOrDefaultAsync(f => f.Id == Guid.Parse(model.PreFactorId));
                 if (preFactor == null)
-                {
                     return NotFound("preFactor not found");
-                }
-
-                Contact contact = preFactor.User.Contacts.SingleOrDefault(c => c.Id.ToString() == model.ContactId);
+                if (preFactor.SubmittedFactorId != null)
+                    return BadRequest("This preFactor already have a submitted factor");
+                Contact contact = preFactor.User.Contacts.SingleOrDefault(c => c.Id == Guid.Parse(model.ContactId));
                 if (contact == null)
-                {
                     return NotFound("user contact not found");
-                }
-
                 long totalPrice = 0;
                 List<FactorItem> factors = new List<FactorItem>();
                 foreach (FactorItemRequestModel item in model.FactorItems)
                 {
                     Product product = await _unitOfWork.ProductRepository.SingleOrDefaultAsync(p => p.Title == item.Product.Title);
                     if (product == null)
-                    {
                         return NotFound(item.Product.Title + " not found");
-                    }
-
                     FactorItem factorItem = new FactorItem()
                     {
                         Price = item.Price,
@@ -317,8 +329,16 @@ namespace Factor.Controllers
                 try
                 {
                     _unitOfWork.SubmittedFactorRepository.Insert(sf);
+                    preFactor.IsDone = true;
+                    _unitOfWork.PreFactorRepository.Update(preFactor);
                     _unitOfWork.Commit();
-                    var x = new { Id = sf.Id, Items = sf.Items, State = sf.State, TotalPrice = sf.TotalPrice };
+                    var x = new
+                    {
+                        sf.Id,
+                        sf.Items,
+                        sf.State,
+                        sf.TotalPrice
+                    };
                     return Ok(x);
                 }
                 catch (Exception e)
@@ -475,7 +495,7 @@ namespace Factor.Controllers
         {
             try
             {
-                Product product = await _unitOfWork.ProductRepository.SingleOrDefaultAsync(p => p.Id.ToString() == productId);
+                Product product = await _unitOfWork.ProductRepository.SingleOrDefaultAsync(p => p.Id == Guid.Parse(productId));
                 if (product == null)
                 {
                     return NotFound("Product not found");

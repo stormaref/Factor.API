@@ -95,7 +95,7 @@ namespace Factor.Controllers
         [Authorize]
         public async IAsyncEnumerable<FileContentResult> GetPreFactorImages([FromQuery] string factorId)
         {
-            PreFactor factor = await _unitOfWork.PreFactorRepository.GetDbSet().Include(f => f.Images).SingleOrDefaultAsync(f => f.Id.ToString() == factorId);
+            PreFactor factor = await _unitOfWork.PreFactorRepository.GetDbSet().Include(f => f.Images).SingleOrDefaultAsync(f => f.Id == Guid.Parse(factorId));
             foreach (Image image in factor.Images)
             {
                 yield return File(image.Bytes, "image/jpeg");

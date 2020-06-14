@@ -11,6 +11,7 @@ namespace Factor.Models
     public class PreFactor : BaseEntity
     {
         public List<Image> Images { get; set; }
+        [JsonIgnore]
         public virtual User User { get; set; }
         public Guid UserId { get; set; }
         [Required]
