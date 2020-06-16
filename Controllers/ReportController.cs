@@ -4,8 +4,11 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using System;
+using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
@@ -19,11 +22,15 @@ namespace Factor.Controllers
     {
         private readonly ILogger<ReportController> _logger;
         private readonly IUnitOfWork _unitOfWork;
+        private readonly IConfiguration _configuration;
+        private readonly string url;
 
-        public ReportController(ILogger<ReportController> logger, IUnitOfWork unitOfWork)
+        public ReportController(ILogger<ReportController> logger, IUnitOfWork unitOfWork, IConfiguration configuration)
         {
             _logger = logger;
             _unitOfWork = unitOfWork;
+            _configuration = configuration;
+            url = _configuration.GetValue<string>("url");
         }
 
         [HttpGet("[action]")]
@@ -32,17 +39,22 @@ namespace Factor.Controllers
         {
             string id = (HttpContext.User.Identity as ClaimsIdentity).Claims.ElementAt(0).Value.Split(' ').Last();
             User user = await _unitOfWork.UserRepository.GetDbSet().Include(u => u.PreFactors).ThenInclude(f => f.Images).SingleOrDefaultAsync(u => u.Id == Guid.Parse(id));
-            IOrderedEnumerable<PreFactor> preFactors = user.PreFactors.OrderBy(f => f.CreationDate).ThenBy(f => f.IsDone);
+            IOrderedEnumerable<PreFactor> preFactors = user.PreFactors.OrderBy(f => f.CreationDate).ThenBy(f => f.IsDone);                       
             var x = from item in preFactors
                     select new
                     {
                         item.Id,
                         item.UserId,
-                        item.Images,
+                        Images = GetImages(item.Images),
                         item.IsDone,
                         item.SubmittedFactorId
                     };
             return Ok(x);
+        }
+
+        private List<string> GetImages(List<Image> images)
+        {
+            return (from image in images select string.Format("{0}/api/Upload/GetImage?id={1}", url, image.Id)).ToList();
         }
 
         [HttpGet("[action]")]
@@ -103,6 +115,12 @@ namespace Factor.Controllers
             return Ok(user.Contacts);
         }
 
-
+        [HttpGet("[action]")]
+        public async Task<IActionResult> GetImage(string id)
+        {
+            var image = await _unitOfWork.ImageRepository.SingleOrDefaultAsync(i => i.Id == Guid.Parse(id));
+            var stream = new MemoryStream(image.Bytes);
+            return base.File(stream, "image/jpeg");
+        }
     }
 }

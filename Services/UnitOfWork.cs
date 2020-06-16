@@ -31,6 +31,9 @@ namespace Factor.Services
         private IRepository<Product> _productRepository;
         public IRepository<Product> ProductRepository => _productRepository ??= new Repository<Product>(_databasecontext);
 
+        private IRepository<Image> _imageRepository;
+        public IRepository<Image> ImageRepository => _imageRepository ??= new Repository<Image>(_databasecontext);
+
         public void Commit()
         {
             _databasecontext.SaveChanges();
