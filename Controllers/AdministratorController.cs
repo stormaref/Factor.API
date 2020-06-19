@@ -287,7 +287,7 @@ namespace Factor.Controllers
                     var x = new
                     {
                         factor.Id,
-                        factor.Images,
+                        Images = StaticTools.GetImages(factor.Images,_configuration.GetValue<string>("url")),
                         factor.IsDone,
                         factor.SubmittedFactorId,
                         UserPhone = factor.User.Phone
