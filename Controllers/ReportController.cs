@@ -1,5 +1,6 @@
 ﻿using Factor.IServices;
 using Factor.Models;
+using Factor.Tools;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
@@ -39,22 +40,19 @@ namespace Factor.Controllers
         {
             string id = (HttpContext.User.Identity as ClaimsIdentity).Claims.ElementAt(0).Value.Split(' ').Last();
             User user = await _unitOfWork.UserRepository.GetDbSet().Include(u => u.PreFactors).ThenInclude(f => f.Images).SingleOrDefaultAsync(u => u.Id == Guid.Parse(id));
-            IOrderedEnumerable<PreFactor> preFactors = user.PreFactors.OrderBy(f => f.CreationDate).ThenBy(f => f.IsDone);                       
+            var preFactors = user.PreFactors.OrderByDescending(f => f.CreationDate).ThenBy(f => f.IsDone);
             var x = from item in preFactors
                     select new
                     {
                         item.Id,
+                        item.CreationDate,
+                        item.Title,
                         item.UserId,
-                        Images = GetImages(item.Images),
+                        Images = StaticTools.GetImages(item.Images, url),
                         item.IsDone,
                         item.SubmittedFactorId
                     };
             return Ok(x);
-        }
-
-        private List<string> GetImages(List<Image> images)
-        {
-            return (from image in images select string.Format("{0}/api/Upload/GetImage?id={1}", url, image.Id)).ToList();
         }
 
         [HttpGet("[action]")]
@@ -65,11 +63,13 @@ namespace Factor.Controllers
                 return BadRequest("Invalid pagination numbers");
             string id = (HttpContext.User.Identity as ClaimsIdentity).Claims.ElementAt(0).Value.Split(' ').Last();
             User user = await _unitOfWork.UserRepository.GetDbSet().Include(u => u.PreFactors).ThenInclude(f => f.Images).SingleOrDefaultAsync(u => u.Id == Guid.Parse(id));
-            var preFactors = user.PreFactors.Skip((page - 1) * size).Take(size).OrderBy(f => f.CreationDate).ThenBy(f => f.IsDone);
+            var preFactors = user.PreFactors.Skip((page - 1) * size).Take(size).OrderByDescending(f => f.CreationDate).ThenBy(f => f.IsDone);
             var data = from item in preFactors
                        select new
                        {
                            item.Id,
+                           item.CreationDate,
+                           item.Title,
                            item.UserId,
                            item.Images,
                            item.IsDone,
@@ -100,7 +100,7 @@ namespace Factor.Controllers
         {
             string id = (HttpContext.User.Identity as ClaimsIdentity).Claims.ElementAt(0).Value.Split(' ').Last();
             User user = await _unitOfWork.UserRepository.GetDbSet().Include(u => u.PreFactors).ThenInclude(pf => pf.SubmittedFactor).ThenInclude(sf => sf.Contact).SingleOrDefaultAsync(u => u.Id == Guid.Parse(id));
-            System.Collections.Generic.List<SubmittedFactor> sf = user.PreFactors.Select(pf => pf.SubmittedFactor).ToList();
+            var sf = user.PreFactors.Select(pf => pf.SubmittedFactor).OrderByDescending(sf => sf.CreationDate).ToList();
             var x = from item in sf
                     select new
                     {
@@ -115,12 +115,6 @@ namespace Factor.Controllers
             return Ok(user.Contacts);
         }
 
-        [HttpGet("[action]")]
-        public async Task<IActionResult> GetImage(string id)
-        {
-            var image = await _unitOfWork.ImageRepository.SingleOrDefaultAsync(i => i.Id == Guid.Parse(id));
-            var stream = new MemoryStream(image.Bytes);
-            return base.File(stream, "image/jpeg");
-        }
+
     }
 }

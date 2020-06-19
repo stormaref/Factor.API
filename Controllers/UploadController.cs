@@ -1,6 +1,7 @@
 ﻿using Factor.IServices;
 using Factor.Models;
 using Factor.Models.RequestModels;
+using Factor.Tools;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Http;
@@ -51,6 +52,7 @@ namespace Factor.Controllers
                     string id = identity.Claims.ElementAt(0).Value.Split(' ').Last();
                     PreFactor factor = new PreFactor()
                     {
+                        Title = model.Title.IsEmpty() ? null : model.Title,
                         Images = vs,
                         User = await _authService.GetUser(id),
                         Description = model.Description

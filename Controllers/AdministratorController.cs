@@ -130,7 +130,17 @@ namespace Factor.Controllers
             try
             {
                 var factors = await _unitOfWork.PreFactorRepository.GetDbSet().Include(f => f.Images).Include(f => f.User).Where(f => !f.IsDone).OrderBy(f => f.CreationDate).ToListAsync();
-                var query = factors.GroupBy(f => f.User, (u, pf) => new { UserId = u.Id, PreFactor = pf });
+                var x = from factor in factors
+                        select new
+                        {
+                            factor.Id,
+                            factor.CreationDate,
+                            factor.Title,
+                            Images = StaticTools.GetImages(factor.Images, _configuration.GetValue<string>("url")),
+                            factor.SubmittedFactorId,
+                            factor.User
+                        };
+                var query = x.GroupBy(f => f.User, (u, pf) => new { UserId = u.Id, PreFactor = pf });
                 return Ok(query);
             }
             catch (Exception e)
@@ -147,7 +157,17 @@ namespace Factor.Controllers
             try
             {
                 var factors = await _unitOfWork.PreFactorRepository.GetDbSet().Include(f => f.Images).Where(f => !f.IsDone).OrderBy(f => f.CreationDate).ToListAsync();
-                return Ok(factors);
+                var x = from factor in factors
+                        select new
+                        {
+                            factor.Id,
+                            factor.CreationDate,
+                            factor.Title,
+                            Images = StaticTools.GetImages(factor.Images,_configuration.GetValue<string>("url")),
+                            factor.SubmittedFactorId,
+                            factor.User,
+                        };
+                return Ok(x);
             }
             catch (Exception e)
             {

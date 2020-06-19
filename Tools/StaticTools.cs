@@ -1,5 +1,7 @@
 ﻿using Factor.Models;
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Text.RegularExpressions;
 
 namespace Factor.Tools
@@ -28,6 +30,15 @@ namespace Factor.Tools
         public static bool IsVerified(this User user)
         {
             return user.Verification.IsVerified;
+        }
+        public static bool IsEmpty(this string str)
+        {
+            return str == null || string.IsNullOrEmpty(str) || string.IsNullOrWhiteSpace(str);
+        }
+
+        public static List<string> GetImages(List<Image> images, string url)
+        {
+            return (from image in images select string.Format("{0}/api/ImageHandler/GetImage?id={1}", url, image.Id)).ToList();
         }
     }
 }
