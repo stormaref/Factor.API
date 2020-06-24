@@ -36,6 +36,25 @@ namespace Factor.Controllers
 
         [HttpGet("[action]")]
         [Authorize]
+        public async Task<IActionResult> GetUserFactor([FromQuery] string factorId)
+        {
+            string id = (HttpContext.User.Identity as ClaimsIdentity).Claims.ElementAt(0).Value.Split(' ').Last();
+            User user = await _unitOfWork.UserRepository.GetDbSet().Include(u => u.PreFactors).ThenInclude(f => f.Images).SingleOrDefaultAsync(u => u.Id == Guid.Parse(id));
+            var preFactor = user.PreFactors.SingleOrDefault(f => f.Id == Guid.Parse(factorId));
+            var x = new
+            {
+                preFactor.Id,
+                preFactor.Title,                
+                Images = StaticTools.GetImages(preFactor.Images,url),
+                preFactor.SubmittedFactorId,
+                preFactor.IsDone,
+                preFactor.User
+            };
+            return Ok(x);
+        }
+
+        [HttpGet("[action]")]
+        [Authorize]
         public async Task<IActionResult> GetAllUserFactors()
         {
             string id = (HttpContext.User.Identity as ClaimsIdentity).Claims.ElementAt(0).Value.Split(' ').Last();

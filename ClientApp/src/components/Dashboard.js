@@ -17,6 +17,11 @@ import Combo from './Combo'
 export class Dashboard extends Component {
 
     state = {
+        addNewContact : false ,
+        addNewItem : false ,
+        newContactPhone : '',
+        newProductName : '',
+        newContactName : '',
         users :[],
         selectedUserPhone : '' , 
         usersOption : [] ,
@@ -279,9 +284,82 @@ export class Dashboard extends Component {
         selectUsers = (e) => {
             
             this.setState({selectedUserPhone : e.target.value})
+            
         }
 
 
+
+
+
+        submitNewProductHandler =() => {
+            this.setState({addNewItem : true})
+            
+        }
+
+
+
+        setNewProductName = (e) => {
+            this.setState({newProductName : e.target.value})
+        }
+
+
+
+        submitNewItem = (e) => {
+            axios.post('http://app.bazarsefid.com/api/Administrator/AddProduct' , null , {
+            params :{title : this.state.newProductName} , 
+            headers : {Authorization : 'Bearer ' + sessionStorage.getItem('token')}}).then(response => {
+                if(response.status == 200)
+                {
+                    let factoritem = this.state.factorItem 
+                    this.setState({factorItem : factoritem })
+                    this.setState({addNewItem : false})
+                }
+            })
+        }
+
+
+
+        submitNewContactControler =() =>{
+            this.setState({addNewContact: true})
+        }
+
+
+        submitNewContact = (e) => {
+
+            let user = this.state.selectedUserPhone
+            console.log(user)
+            axios.post('http://app.bazarsefid.com/api/Administrator/AddContactToUser' , {
+                UserPhone: user,
+                contactName: this.state.newContactName
+            } , { headers : {
+                Authorization : 'Bearer ' + sessionStorage.getItem('token')
+            }}).then(response => {
+                console.log(response)
+                if(response.status == 200) 
+                {
+                let contactOptions = this.state.contactOptions
+                contactOptions.push(<option value = {response.data.id}>{response.data.name}</option>)
+                this.setState({contactOptions : contactOptions})
+                this.setState({addNewContact : false})
+                }
+            })
+
+
+            
+        }
+
+      
+
+        setNewContactName =(e) =>
+        {
+            this.setState({newContactName : e.target.value})
+        }
+
+
+
+        backgroundColor = {
+            backgroundColor : '#8A2BE2'
+        }
 
      render() {
       
@@ -298,20 +376,45 @@ export class Dashboard extends Component {
 
                 <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css" integrity="sha384-9aIt2nRpC12Uk9gS9baDl411NQApFmC26EwAOH8WgZl5MYYxFfc+NcPb1dKGj7Sk" crossorigin="anonymous"></link>
                 <div className = 'row'>
-                    <select name = "select" id = "contacts"  onChange = {this.selectUsers} className = "form-control">
-                        {this.state.usersOption}
-                    </select>
+                    
+                        
+                    
+                    <div className = 'col-5'>
+                        <div className='card' >
+                            <label for = 'select'>Select User :</label>
+                            <select name = "select" id = "contacts"  onChange = {this.selectUsers} className = "form-control">
+                                {this.state.usersOption}
+                            </select>
+                        </div>
+                    </div>
+                    <div className= 'col-5'>
+
+                    </div>
+                    <div className= 'col-2'>
+                        
+                    </div>
                 </div>
                 <div className = "row">
                     <div className = "col-5">
-                        <button className= "btn btn-primary btn-block" id ="box" onClick={this.Box} disabled = {this.state.makeFactor}>Make Factor</button>
-                         {this.state.makeFactor && <button  className= "btn btn-primary "  onClick = {this.addItem}>+</button>}
+                        <button className= "btn btn-primary btn-block" id ="box" onClick={this.Box} disabled = {this.state.makeFactor} style = {this.backgroundColor}>Make Factor</button>
+                         {this.state.makeFactor && <button  className= "btn btn-primary "  onClick = {this.addItem} style = {this.backgroundColor}>+</button>}
                          <Fields Items = {this.state.factorItem} setItem ={this.setItem}></Fields>
                          {this.state.endOfFactor && <select name = "select" id ='items' className = "form-control" onChange = {this.selectContact} >
                                     {this.state.contactOptions}
                                 </select>}
+
+                        {this.state.endOfFactor && <button className = 'btn btn-primary form-control' onClick = {this.submitNewContactControler} disabled ={this.state.addNewContact}>add new Contact</button>}
+                        {this.state.addNewContact && <input type = 'text'  className = 'form-control'  placeholder = 'new Contact Name' onChange ={this.setNewContactName} ></input>}
+                        {this.state.addNewContact && <button className = 'btn btn-primary form-control' onClick ={this.submitNewContact} >Submit New Contact</button>}
+
+
+                        {this.state.endOfFactor && <button className = 'btn btn-primary form-control' onClick = {this.submitNewProductHandler} disabled ={this.state.addNewContact}>add new Product</button>}
+                        {this.state.addNewItem && <input type = 'text'  className = 'form-control'  placeholder = 'Item Name' onChange ={this.setNewProductName} ></input>}
+                        {this.state.addNewItem && <button className = 'btn btn-primary form-control' onClick ={this.submitNewItem} >Submit New Product</button>}
+                        
+
                         {this.state.endOfFactor && <DatePicker  onClickSubmitButton = {this.date.bind(this)}></DatePicker> }
-                         {this.state.endOfFactor && <button className= "btn btn-primary btn-block" onClick = {this.endOfFactor} disabled = {this.state.endOfFactorClicked} >End Of Factor</button>}
+                         {this.state.endOfFactor && <button className= "btn btn-primary btn-block" onClick = {this.endOfFactor} disabled = {this.state.endOfFactorClicked} style = {this.backgroundColor} >End Of Factor</button>}
                          
                          
                          
@@ -322,12 +425,12 @@ export class Dashboard extends Component {
                     </div>
 
                     <div className = "col-2">
-                    <button type="button" className="btn btn-primary btn-block" id = "fetch" onClick = {this.fetchFactor} disabled = {this.state.loading}>
+                    <button type="button" className="btn btn-primary btn-block" id = "fetch" onClick = {this.fetchFactor} disabled = {this.state.loading} style = {this.backgroundColor}>
                         {this.state.loading && (<i className ="fa fa-refresh fa-spin"></i>)}
                             Fetch Undone Factors
                         </button>
                         
-                        <FactorGrid factors = {this.state.factors}  showFactor = {this.showFactor}></FactorGrid>
+                        <FactorGrid factors = {this.state.factors}  showFactor = {this.showFactor} className = 'form-control'></FactorGrid>
                     </div>
                 </div>
                 

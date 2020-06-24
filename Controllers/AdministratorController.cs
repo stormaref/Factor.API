@@ -240,8 +240,9 @@ namespace Factor.Controllers
                             select new
                             {
                                 item.Id,
+                                item.Title,
                                 UserId = item.User.Id,
-                                item.Images,
+                                Images = StaticTools.GetImages(item.Images,_configuration.GetValue<string>("url")),
                                 item.IsDone,
                                 item.SubmittedFactorId
                             };

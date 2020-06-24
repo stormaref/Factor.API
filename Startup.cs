@@ -112,22 +112,22 @@ namespace Factor
                 await next();
             });
 
-            //app.UseSpa(spa =>
-            //{
-            //    spa.Options.SourcePath = "ClientApp";
-
-            //    if (env.IsDevelopment())
-            //    {
-            //        spa.UseReactDevelopmentServer(npmScript: "start");
-            //    }
-            //});
-
-            app.UseSwagger();
-
-            app.UseSwaggerUI(c =>
+            app.UseSpa(spa =>
             {
-                c.SwaggerEndpoint("/swagger/v1/swagger.json", "Factor API v1");
+                spa.Options.SourcePath = "ClientApp";
+
+                if (env.IsDevelopment())
+                {
+                    spa.UseReactDevelopmentServer(npmScript: "start");
+                }
             });
+
+            //app.UseSwagger();
+
+            //app.UseSwaggerUI(c =>
+            //{
+            //    c.SwaggerEndpoint("/swagger/v1/swagger.json", "Factor API v1");
+            //});
         }
     }
 }
