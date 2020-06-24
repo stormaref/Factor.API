@@ -48,7 +48,7 @@ namespace Factor.Controllers
                 Images = StaticTools.GetImages(preFactor.Images,url),
                 preFactor.SubmittedFactorId,
                 preFactor.IsDone,
-                preFactor.User
+                preFactor.Description
             };
             return Ok(x);
         }
@@ -69,7 +69,8 @@ namespace Factor.Controllers
                         item.UserId,
                         Images = StaticTools.GetImages(item.Images, url),
                         item.IsDone,
-                        item.SubmittedFactorId
+                        item.SubmittedFactorId,
+                        item.Description
                     };
             return Ok(x);
         }
@@ -92,7 +93,8 @@ namespace Factor.Controllers
                            item.UserId,
                            item.Images,
                            item.IsDone,
-                           item.SubmittedFactorId
+                           item.SubmittedFactorId,
+                           item.Description
                        };
             var result = new { Data = data, TotalPages = CalculateTotalPages(size, user.PreFactors.Count) };
             return Ok(result);
