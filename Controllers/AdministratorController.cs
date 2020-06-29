@@ -129,7 +129,7 @@ namespace Factor.Controllers
         {
             try
             {
-                var factors = await _unitOfWork.PreFactorRepository.GetDbSet().Include(f => f.Images).Include(f => f.User).Where(f => !f.IsDone).OrderBy(f => f.CreationDate).ToListAsync();
+                List<PreFactor> factors = await _unitOfWork.PreFactorRepository.GetDbSet().Include(f => f.Images).Include(f => f.User).Where(f => !f.IsDone).OrderBy(f => f.CreationDate).ToListAsync();
                 var x = from factor in factors
                         select new
                         {
@@ -156,14 +156,14 @@ namespace Factor.Controllers
         {
             try
             {
-                var factors = await _unitOfWork.PreFactorRepository.GetDbSet().Include(f => f.Images).Where(f => !f.IsDone).OrderBy(f => f.CreationDate).ToListAsync();
+                List<PreFactor> factors = await _unitOfWork.PreFactorRepository.GetDbSet().Include(f => f.Images).Where(f => !f.IsDone).OrderBy(f => f.CreationDate).ToListAsync();
                 var x = from factor in factors
                         select new
                         {
                             factor.Id,
                             factor.CreationDate,
                             factor.Title,
-                            Images = StaticTools.GetImages(factor.Images,_configuration.GetValue<string>("url")),
+                            Images = StaticTools.GetImages(factor.Images, _configuration.GetValue<string>("url")),
                             factor.SubmittedFactorId,
                             factor.User,
                         };
@@ -242,7 +242,7 @@ namespace Factor.Controllers
                                 item.Id,
                                 item.Title,
                                 UserId = item.User.Id,
-                                Images = StaticTools.GetImages(item.Images,_configuration.GetValue<string>("url")),
+                                Images = StaticTools.GetImages(item.Images, _configuration.GetValue<string>("url")),
                                 item.IsDone,
                                 item.SubmittedFactorId
                             };
@@ -266,7 +266,7 @@ namespace Factor.Controllers
         {
             try
             {
-                var users = _unitOfWork.UserRepository.Where(u => u.Role == "User").OrderBy(u => u.CreationDate);
+                IOrderedQueryable<User> users = _unitOfWork.UserRepository.Where(u => u.Role == "User").OrderBy(u => u.CreationDate);
                 return Ok(users);
             }
             catch (Exception e)
@@ -288,7 +288,7 @@ namespace Factor.Controllers
                     var x = new
                     {
                         factor.Id,
-                        Images = StaticTools.GetImages(factor.Images,_configuration.GetValue<string>("url")),
+                        Images = StaticTools.GetImages(factor.Images, _configuration.GetValue<string>("url")),
                         factor.IsDone,
                         factor.SubmittedFactorId,
                         UserPhone = factor.User.Phone
@@ -315,19 +315,31 @@ namespace Factor.Controllers
             {
                 PreFactor preFactor = await _unitOfWork.PreFactorRepository.GetDbSet().Include(f => f.User).ThenInclude(u => u.Contacts).SingleOrDefaultAsync(f => f.Id == Guid.Parse(model.PreFactorId));
                 if (preFactor == null)
+                {
                     return NotFound("preFactor not found");
+                }
+
                 if (preFactor.SubmittedFactorId != null)
+                {
                     return BadRequest("This preFactor already have a submitted factor");
+                }
+
                 Contact contact = preFactor.User.Contacts.SingleOrDefault(c => c.Id == Guid.Parse(model.ContactId));
                 if (contact == null)
+                {
                     return NotFound("user contact not found");
+                }
+
                 long totalPrice = 0;
                 List<FactorItem> factors = new List<FactorItem>();
                 foreach (FactorItemRequestModel item in model.FactorItems)
                 {
                     Product product = await _unitOfWork.ProductRepository.SingleOrDefaultAsync(p => p.Title == item.Product.Title);
                     if (product == null)
+                    {
                         return NotFound(item.Product.Title + " not found");
+                    }
+
                     FactorItem factorItem = new FactorItem()
                     {
                         Price = item.Price,

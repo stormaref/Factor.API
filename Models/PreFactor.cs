@@ -10,6 +10,7 @@ namespace Factor.Models
     [Table("PreFactor")]
     public class PreFactor : BaseEntity
     {
+        [Required]
         public string Title { get; set; }
         public List<Image> Images { get; set; }
         [JsonIgnore]
