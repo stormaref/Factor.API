@@ -110,8 +110,8 @@ namespace Factor.Controllers
             {
                 ClaimsIdentity identity = HttpContext.User.Identity as ClaimsIdentity;
                 string number = identity.Claims.ElementAt(1).Value.Split(' ').Last();
-                System.Collections.Generic.IEnumerable<Claim> claims = identity.Claims;
-                return Ok(await _unitOfWork.UserRepository.GetDbSet().SingleOrDefaultAsync(u => u.Phone == number));
+                var user = await _unitOfWork.UserRepository.GetDbSet().SingleOrDefaultAsync(u => u.Phone == number);                      
+                return Ok(user);
             }
             catch (Exception e)
             {

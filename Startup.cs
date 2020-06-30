@@ -13,6 +13,8 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using System.Text;
+using System.Linq;
+using System;
 
 namespace Factor
 {
@@ -49,7 +51,7 @@ namespace Factor
             services.AddScoped<DatabaseContext>();
             services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
             services.AddScoped<IUnitOfWork, UnitOfWork>();
-
+            
             services.AddScoped<IMessageService, MessageService>();
             services.AddScoped<IAuthService, AuthService>();
 
@@ -67,6 +69,16 @@ namespace Factor
                     IssuerSigningKey = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(Configuration["Jwt:Key"])),
                     ValidateIssuer = false,
                     ValidateAudience = false,
+                };
+                x.Events = new JwtBearerEvents() {
+                    OnTokenValidated = async (TokenValidatedContext arg) =>
+                    {
+                        var userId = Guid.Parse(arg.Principal.Claims.Select(c => c.Value).ToList()[0]);
+                        var _unitOfWork = arg.HttpContext.RequestServices.GetRequiredService<IUnitOfWork>();
+                        var user = await _unitOfWork.UserRepository.SingleOrDefaultAsync(u => u.Id == userId);
+                        if (user == null)
+                            arg.Fail("user is not available");
+                    },
                 };
             });
 
