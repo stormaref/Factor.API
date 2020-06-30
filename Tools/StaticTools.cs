@@ -27,10 +27,6 @@ namespace Factor.Tools
             return (date >= startDate && date <= endDate);
         }
 
-        public static bool IsVerified(this User user)
-        {
-            return user.Verification.IsVerified;
-        }
         public static bool IsEmpty(this string str)
         {
             return str == null || string.IsNullOrEmpty(str) || string.IsNullOrWhiteSpace(str);
