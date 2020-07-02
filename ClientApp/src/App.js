@@ -6,11 +6,11 @@ import Dashboard from './components/Dashboard'
 
 import Code from './components/Code'
 
-
 import CommingSoon from './components/comingSoon'
 
 import { Switch, BrowserRouter as Router, Route, Redirect, Link } from 'react-router-dom'
 import PrivateRoute from './components/PrivateRoute'
+import NotFound from './components/NotFound'
 
 
 
@@ -62,6 +62,7 @@ export class App extends Component {
                         </React.Fragment>
                     )} />
                     <PrivateRoute exact path='/Admin/dashboard' component={Dashboard} />
+                    <Route path="*" component={NotFound} />
                 </Switch>
             </Router>
         )
