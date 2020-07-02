@@ -9,7 +9,9 @@ export class Login extends Component {
 
     state = {
         Username : '',
-        Granted : false 
+        Granted : false ,
+        state : false,
+        message : ''
     }
     
 
@@ -32,7 +34,7 @@ export class Login extends Component {
             
             sessionStorage.setItem('phone' , this.state.Username )
             console.log('accepted')
-            window.location.href = '/Code'
+            window.location.href = '/Admin/Code'
         }
         if(response.status ==401)
         {
@@ -44,9 +46,14 @@ export class Login extends Component {
                 if(err.response.statusText == 'Unauthorized')
                 {
                     console.log('phone is not valid')
+                    this.setState({message : 'phone is not valid'})
+                    this.setState({state : true})
+
                 }
                 else {
                     console.log('phone format is wrong')
+                    this.setState({message : 'Please Try Agian ...'})
+                    this.setState({state : true})
                 }
             })
             
@@ -70,15 +77,31 @@ export class Login extends Component {
       
         
     }
+
+
+    closeAlert = () => {
+        this.setState({state : false})
+    }
+
+
+
+
+
     render() {
         return (
             <div>
                 
-                <link href="https://stackpath.bootstrapcdn.com/bootswatch/4.5.0/solar/bootstrap.min.css" rel="stylesheet" integrity="sha384-iDw+DjLp94cdk+ODAgTY4IZ6d9aaRpG9KHr168TPxrfQ9wv/DTVC+cWyojoxjHBT" crossorigin="anonymous"></link>
+                <link href="https://stackpath.bootstrapcdn.com/bootswatch/4.5.0/pulse/bootstrap.min.css" rel="stylesheet" integrity="sha384-t87SWLASAVDfD3SOypT7WDQZv9X6r0mq1lMEc6m1/+tAVfCXosegm1BvaIiQm3zB" crossorigin="anonymous"></link>
                 <div class="row mt-5">
         <div class="col-md-6 m-auto">
           <div class="card card-body">
             <h1 class="text-center mb-3"><i class="fas fa-sign-in-alt"></i>  Login</h1>
+            {this.state.state && <div class="alert alert-warning alert-dismissible fade show" role="alert">
+                            <strong>Warning!</strong> {this.state.message}
+                            <button type="button" class="close" data-dismiss="alert" aria-label="Close" onClick ={this.closeAlert}>
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                        </div>}
             <form id="form" onSubmit = {this.onSubmit}  >
               <div class="form-group">
                 <label for="email">Phone</label>

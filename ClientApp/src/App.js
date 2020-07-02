@@ -7,6 +7,8 @@ import Dashboard from './components/Dashboard'
 import Code from './components/Code'
 
 
+import CommingSoon from './components/comingSoon'
+
 import { Switch , BrowserRouter as Router , Route  , Redirect , Link} from 'react-router-dom'
 import PrivateRoute from './components/PrivateRoute'
 
@@ -37,19 +39,25 @@ componentDidMount ()
     return (
       <Router>
           <Switch>
-            <Route exact path = "/" render = {props => (
+          <Route exact path = "/" render = {props => (
+              <React.Fragment>
+               
+                <CommingSoon></CommingSoon>
+              </React.Fragment>
+            )}/>
+            <Route exact path = "/Admin/Login" render = {props => (
               <React.Fragment>
                
                 <Login loginGranted = {this.loginGranted} ></Login>
               </React.Fragment>
             )}/>
-            <Route exact path = "/Code" render = {props => (
+            <Route exact path = "/Admin/Code" render = {props => (
               <React.Fragment>
                
                 <Code ></Code>
               </React.Fragment>
             )}/>
-            <PrivateRoute exact component = {Dashboard} path='/dashboard' />
+            <PrivateRoute exact path='/Admin/dashboard' component = {Dashboard}  />
           </Switch>
       </Router>
     )

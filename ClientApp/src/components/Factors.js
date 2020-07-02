@@ -1,30 +1,38 @@
-import React, { Component } from 'react'
+import React, {Component} from 'react'
+import classNames from 'classnames';
+import '../styles/aref.css'
 
 export class Factors extends Component {
-    
+
     state = {
-        data : []
+        data: []
     }
 
-    onClick = () => {
+    onClick = (e) => {
         this.props.showFactor(this.props.data)
+        this.setState({active: true})
     }
 
     render() {
-
-      
-
-
+        var liClass = classNames({'list-group-item': true, 'active': this.state.active})
         console.log(this.props.data)
         return (
             <div>
-                <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css" integrity="sha384-9aIt2nRpC12Uk9gS9baDl411NQApFmC26EwAOH8WgZl5MYYxFfc+NcPb1dKGj7Sk" crossorigin="anonymous"></link>
-                
-                    <button type="button" className="btn btn-primary btn-block form-control" onClick = {this.onClick}>{this.props.data}</button>
-                
+                <li onClick={
+                        this.onClick
+                    }
+                    className={liClass}
+                    style={
+                        {cursor: "pointer"}
+                }>
+                    {
+                    this.props.data != null ? this.props.data : 'No Title'
+                }</li>
+
             </div>
         )
     }
 }
+
 
 export default Factors

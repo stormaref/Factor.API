@@ -9,7 +9,7 @@ const  PrivateRoute = ({component : Component   , ...rest}) => (
        if(!sessionStorage.getItem('Granted'))
        {
            
-           return <Redirect to = "/" />
+           return <Redirect to = "/Admin/Login" />
            
        }
        else if(sessionStorage.getItem('Granted'))

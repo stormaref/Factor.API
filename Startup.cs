@@ -117,7 +117,7 @@ namespace Factor
             {
                 if (context.Request.Path == "/")
                 {
-                    context.Response.Redirect("dashboard", true);
+                    //context.Response.Redirect("dashboard", true);
 
                     return;
                 }

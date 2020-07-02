@@ -12,7 +12,8 @@ export class Combo extends Component {
         total : '' ,
         fetched : false ,
         items : [] , 
-        selectedItem : ''
+        selectedItem : '',
+        forceUpdate : false
     }
 
 
@@ -72,8 +73,8 @@ export class Combo extends Component {
 
     async componentDidMount () {
         let option = []
-        if (!this.state.fetched)
-        {
+       
+        
         this.setState({fetched : true})
         await axios.get("http://app.bazarsefid.com/api/Administrator/GetProducts" , { headers :{
             Authorization : 'Bearer ' + sessionStorage.getItem('token')
@@ -90,14 +91,40 @@ export class Combo extends Component {
                 this.setState({fetched : true})
             })
             
-    }
+    
     }
 
     
+    fetchItems = () => {
+        
+        
+           axios.get("http://app.bazarsefid.com/api/Administrator/GetProducts" , { headers :{
+            Authorization : 'Bearer ' + sessionStorage.getItem('token')
+    }}).then(Response => {
+        console.log('fetching Items')
+                let pre = []
+                pre = pre.concat(<option ></option>)
+                this.setState({items : pre})
+            Response.data.map((item) => {
+                const title = item.title
+                pre = pre.concat(<option value={title}>{title}</option>)
+                this.setState({items : pre})
+                
+             })
+                this.setState({fetched : true})
+            })
+            this.setState ({forceUpdate : false})
+        
+    }
+
+
 
 
     render() {
-     
+        
+    
+    
+        
         return (
             
             <div>
@@ -105,6 +132,7 @@ export class Combo extends Component {
 
 <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css" integrity="sha384-9aIt2nRpC12Uk9gS9baDl411NQApFmC26EwAOH8WgZl5MYYxFfc+NcPb1dKGj7Sk" crossorigin="anonymous"></link>
                 <div className="card">
+                    
                     <div className="card-body">
                         <div className = 'row'>
                             <div className= "col">
@@ -121,7 +149,7 @@ export class Combo extends Component {
                             </div>
                             <div className= "col">
                                 <label for= "select" >Item: </label>
-                                <select name = "select" id ='items' className = "form-control" onChange = {this.selectedItem} >
+                                <select name = "select" id ='items' className = "form-control" onChange = {this.selectedItem}  onClick = {this.fetchItems}>
                                     {this.state.items}
                                 </select>
                             </div>   

@@ -18,7 +18,7 @@ export class FactorGrid extends Component {
         
        
         return this.props.factors.map((factor)=>(
-            <Factors  data = {factor.id}  showFactor = {this.props.showFactor} ></Factors>
+            <Factors  data = {factor.title}  showFactor = {this.props.showFactor} ></Factors>
         ))
     }
 }
