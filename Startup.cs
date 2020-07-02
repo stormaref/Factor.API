@@ -51,7 +51,7 @@ namespace Factor
             services.AddScoped<DatabaseContext>();
             services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
             services.AddScoped<IUnitOfWork, UnitOfWork>();
-            
+
             services.AddScoped<IMessageService, MessageService>();
             services.AddScoped<IAuthService, AuthService>();
 
@@ -70,7 +70,8 @@ namespace Factor
                     ValidateIssuer = false,
                     ValidateAudience = false,
                 };
-                x.Events = new JwtBearerEvents() {
+                x.Events = new JwtBearerEvents()
+                {
                     OnTokenValidated = async (TokenValidatedContext arg) =>
                     {
                         var userId = Guid.Parse(arg.Principal.Claims.Select(c => c.Value).ToList()[0]);
@@ -113,16 +114,16 @@ namespace Factor
                 endpoints.MapControllers();
             });
 
-            app.Use(async (context, next) =>
-            {
-                if (context.Request.Path == "/")
-                {
-                    //context.Response.Redirect("dashboard", true);
+            //app.Use(async (context, next) =>
+            //{
+            //    var path = context.Request.Path;
 
-                    return;
-                }
-                await next();
-            });
+            //    if (path.Value == "/")
+            //    {
+            //        context.Response.Redirect("/", true);
+            //    }
+            //    await next();
+            //});
 
             app.UseSpa(spa =>
             {
