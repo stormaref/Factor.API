@@ -18,6 +18,7 @@ namespace Factor.Models
         [Required]
         public string Role { get; set; }
         public ICollection<Contact> Contacts { get; set; }
+        public ICollection<Project> Projects { get; set; }
         public User(string phone)
         {
             Phone = phone;

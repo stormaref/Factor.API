@@ -1,14 +1,17 @@
 ﻿using Factor.IServices;
 using Factor.Models;
+using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 using System;
 using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
+using System.Net.Http;
 using System.Security.Claims;
 using System.Text;
 using System.Threading.Tasks;
+using System.Linq;
 
 namespace Factor.Services
 {
@@ -48,5 +51,7 @@ namespace Factor.Services
         {
             return await _unitOfWork.UserRepository.GetDbSet().SingleOrDefaultAsync(u => u.Id == Guid.Parse(id));
         }
+
+        public async Task<User> GetUser(HttpContext context) => await _unitOfWork.UserRepository.SingleOrDefaultAsync(u => Guid.Parse((context.User.Identity as ClaimsIdentity).Claims.Select(c => c.Value).ToList()[0]) == u.Id);
     }
 }

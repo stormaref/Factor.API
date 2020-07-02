@@ -16,6 +16,7 @@ namespace Factor.IRepositories
         void Update(T entity);
         void Delete(Guid id);
         DbSet<T> GetDbSet();
+        DbSet<T> DbSet { get; }
         IQueryable<T> Where(Expression<Func<T, bool>> predicate);
         public Task<T> SingleOrDefaultAsync(Expression<Func<T, bool>> predicate);
     }

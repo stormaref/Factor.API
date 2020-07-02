@@ -22,6 +22,9 @@ namespace Factor.Models
         [JsonIgnore]
         public virtual SubmittedFactor SubmittedFactor { get; set; }
         public Guid? SubmittedFactorId { get; set; }
+        [JsonIgnore]
+        public virtual Project Project { get; set; }
+        public Guid? ProjectId { get; set; }
         public PreFactor()
         {
             CreationDate = DateTime.Now;

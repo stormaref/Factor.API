@@ -19,6 +19,8 @@ namespace Factor.Repositories
             _entities = context.Set<T>();
         }
 
+        public DbSet<T> DbSet => _entities;
+
         public void Delete(Guid id)
         {
             if (id == null)

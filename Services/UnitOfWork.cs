@@ -34,6 +34,9 @@ namespace Factor.Services
         private IRepository<Image> _imageRepository;
         public IRepository<Image> ImageRepository => _imageRepository ??= new Repository<Image>(_databasecontext);
 
+        private IRepository<Project> _projectRepository;
+        public IRepository<Project> ProjectRepository => _projectRepository ??= new Repository<Project>(_databasecontext);
+
         public void Commit()
         {
             _databasecontext.SaveChanges();

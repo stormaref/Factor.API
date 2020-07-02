@@ -20,11 +20,41 @@ namespace Factor.Controllers
         }
 
         [HttpGet("[action]")]
-        public async Task<IActionResult> GetImage(string id)
+        public async Task<IActionResult> GetImage([FromQuery] string id)
         {
-            var image = await _unitOfWork.ImageRepository.SingleOrDefaultAsync(i => i.Id == Guid.Parse(id));
-            var stream = new MemoryStream(image.Bytes);
-            return File(stream, "image/jpeg");
+            try
+            {
+                var image = await _unitOfWork.ImageRepository.SingleOrDefaultAsync(i => i.Id == Guid.Parse(id));
+                if (image == null)
+                {
+                    return NotFound();
+                }
+                var stream = new MemoryStream(image.Bytes);
+                return File(stream, "image/jpeg");
+            }
+            catch (Exception e)
+            {
+                return BadRequest();
+            }
+        }
+
+        [HttpGet("[action]/{id}")]
+        public async Task<IActionResult> GetImageRoute([FromRoute] string id)
+        {
+            try
+            {
+                var image = await _unitOfWork.ImageRepository.SingleOrDefaultAsync(i => i.Id == Guid.Parse(id));
+                if (image == null)
+                {
+                    return NotFound();
+                }
+                var stream = new MemoryStream(image.Bytes);
+                return File(stream, "image/jpeg");
+            }
+            catch (Exception e)
+            {
+                return BadRequest();
+            }
         }
     }
 }
