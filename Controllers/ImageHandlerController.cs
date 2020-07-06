@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using Factor.IServices;
 using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
 
 namespace Factor.Controllers
 {
@@ -13,10 +14,12 @@ namespace Factor.Controllers
     public class ImageHandlerController : ControllerBase
     {
         private readonly IUnitOfWork _unitOfWork;
+        private readonly ILogger<ImageHandlerController> _logger;
 
-        public ImageHandlerController(IUnitOfWork unitOfWork)
+        public ImageHandlerController(IUnitOfWork unitOfWork, ILogger<ImageHandlerController> logger)
         {
             _unitOfWork = unitOfWork;
+            _logger = logger;
         }
 
         [HttpGet("[action]")]
@@ -34,6 +37,7 @@ namespace Factor.Controllers
             }
             catch (Exception e)
             {
+                _logger.Log(LogLevel.Error, e.Message, e);
                 return BadRequest();
             }
         }
@@ -53,6 +57,7 @@ namespace Factor.Controllers
             }
             catch (Exception e)
             {
+                _logger.Log(LogLevel.Error, e.Message, e);
                 return BadRequest();
             }
         }
