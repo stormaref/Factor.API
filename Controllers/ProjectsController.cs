@@ -48,7 +48,8 @@ namespace Factor.Controllers
                 {
                     _unitOfWork.ProjectRepository.Insert(project);
                     _unitOfWork.Commit();
-                    return Ok(project);
+                    var x = new { project.Id, project.CreationDate, project.Title };
+                    return Ok(x);
                 }
                 catch (Exception e)
                 {
@@ -64,7 +65,7 @@ namespace Factor.Controllers
             }
         }
 
-        [HttpPost("[action]")]
+        [HttpGet("[action]")]
         [Authorize]
         public async Task<IActionResult> GetAll()
         {
@@ -73,7 +74,14 @@ namespace Factor.Controllers
                 var user = await _unitOfWork.UserRepository.DbSet.Include(u => u.Projects).SingleOrDefaultAsync(u => Guid.Parse((HttpContext.User.Identity as ClaimsIdentity).Claims.Select(c => c.Value).ToList()[0]) == u.Id);
                 if (user == null)
                     return NotFound("user not found");
-                return Ok(user.Projects);
+                var x = from project in user.Projects
+                        select new
+                        {
+                            project.Id,
+                            project.CreationDate,
+                            project.Title
+                        };
+                return Ok(x);
             }
             catch (Exception e)
             {
