@@ -1,11 +1,10 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using Factor.IServices;
-using Factor.Migrations;
 using Factor.Models;
+using Factor.Tools;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -39,7 +38,7 @@ namespace Factor.Controllers
             try
             {
                 if (await CheckProjectTitle(title))
-                    return BadRequest();
+                    return BadRequest("This name is already available");
                 var user = await _authService.GetUser(HttpContext);
                 if (user == null)
                     return NotFound("user not found");
@@ -94,6 +93,36 @@ namespace Factor.Controllers
         {
             var project = await _unitOfWork.ProjectRepository.DbSet.SingleOrDefaultAsync(p => p.Title == title.Trim() || p.Title == title);
             return project != null;
+        }
+
+        [HttpGet("[action]")]
+        [Authorize]
+        public async Task<IActionResult> GetProjectPreFactors(string projectId)
+        {
+            try
+            {
+                var user = await _unitOfWork.UserRepository.DbSet.Include(u => u.Projects).ThenInclude(p => p.PreFactors).SingleOrDefaultAsync(u => Guid.Parse((HttpContext.User.Identity as ClaimsIdentity).Claims.Select(c => c.Value).ToList()[0]) == u.Id);
+                if (user == null)
+                    return NotFound("user not found");
+                var project = user.Projects.SingleOrDefault(p => p.Id == Guid.Parse(projectId));
+                if (project == null)
+                    return NotFound("Project not found");
+                var x = from pf in project.PreFactors
+                        select new
+                        {
+                            pf.Id,
+                            Images = StaticTools.GetImages(pf.Images, _configuration.GetValue<string>("url")),
+                            pf.IsDone,
+                            pf.Title,
+                            pf.SubmittedFactorId
+                        };
+                return Ok(x);
+            }
+            catch (Exception e)
+            {
+                _logger.LogError(e, e.Message);
+                return Problem(e.Message);
+            }
         }
     }
 }
